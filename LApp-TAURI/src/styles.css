@@ -110,3 +110,37 @@ button {
     background-color: #0f0f0f69;
   }
 }
+
+/* Custom code from here on... */
+/* NAVIGATION */
+.nav {
+  padding: 1rem;
+  position: absolute; /* Position navigation bar absolutely */
+  left: 0; /* Align to the left */
+  top: 50%; /* Move it down to the middle of the screen */
+  transform: translate(30%, -100%); /* Adjust position slightly to the right and vertically center it */
+}
+
+.nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  width: 200px;
+}
+
+.nav ul li a {
+  display: block;
+  color: #000;
+  padding: 8px 16px;
+  font-size: 1.2rem;
+  text-decoration: none;
+  background-color: #f1f1f1;
+  margin: 10px 0;
+}
+
+/*Displaces the nav bar items slighty on hovering over them with the exclusion of 1st item which is the timer*/
+.nav ul li:hover {
+  position: relative;
+  left: -5px;
+  top: -5px;
+}
