@@ -17,15 +17,6 @@
   -webkit-text-size-adjust: 100%;
 }
 
-.container {
-  margin: 0;
-  padding-top: 10vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-}
-
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -50,10 +41,6 @@ a {
 
 a:hover {
   color: #535bf2;
-}
-
-h1 {
-  text-align: center;
 }
 
 input,
@@ -112,6 +99,30 @@ button {
 }
 
 /* Custom code from here on... */
+/* GENERAL STUFF */
+body { /* Removes the innate padding */
+  border-color: red;
+  border-style: solid;
+  border-width: 1px;
+
+  margin: 5px;
+  padding: 0;
+}
+
+.whole-content-container { /* Container that holds all the content */
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+h1 {
+  text-align: center;
+
+  margin: 0;
+  padding: 0;
+}
+
 /* NAVIGATION */
 .nav {
   position: absolute;
@@ -139,7 +150,7 @@ button {
   border-bottom: solid #2f2f2f;
 }
 
-/*Displaces the nav bar items slighty on hovering over them with the exclusion of 1st item which is the timer*/
+/*Displaces the nav bar items slighty on hovering over them*/
 .nav ul li:hover {
   position: relative;
   left: +100px;
