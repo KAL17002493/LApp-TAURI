@@ -99,7 +99,7 @@ button {
 }
 
 /* Custom code from here on... */
-/* GENERAL STUFF */
+/*### GENERAL STUFF ###*/
 body { /* Removes the innate padding */
   border-color: red;
   border-style: solid;
@@ -123,7 +123,7 @@ h1 {
   padding: 0;
 }
 
-/* NAVIGATION */
+/*### NAVIGATION ###*/
 .nav {
   position: absolute;
   top: +180px;
@@ -154,4 +154,17 @@ h1 {
 .nav ul li:hover {
   position: relative;
   left: +100px;
+}
+
+/*### INFO-PAGE ###*/
+.info-page ul {
+  list-style-type: none;
+  margin: 10px;
+  padding: 0;
+}
+
+.info-page ul li {
+  padding: 10px;
+  color: #bdbdbd;
+  font-size: 1rem;
 }
