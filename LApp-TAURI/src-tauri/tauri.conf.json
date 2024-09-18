@@ -20,7 +20,8 @@
       {
         "title": "Main Page",
         "width": 850,
-        "height": 500
+        "height": 500,
+        "resizable": false
       }
     ],
     "security": {

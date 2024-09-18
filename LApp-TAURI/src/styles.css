@@ -101,9 +101,9 @@ button {
 /* Custom code from here on... */
 /*### GENERAL STUFF ###*/
 body { /* Removes the innate padding */
-  border-color: red;
+  /*border-color: red;
   border-style: solid;
-  border-width: 1px;
+  border-width: 1px;*/
 
   margin: 5px;
   padding: 0;
@@ -167,4 +167,79 @@ h1 {
   padding: 10px;
   color: #bdbdbd;
   font-size: 1rem;
+}
+
+/*### PRACTICE-PAGE ###*/
+.grid-container-practice{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns, each 1 fraction unit */
+  grid-template-rows: repeat(2, 230px); /* 2 rows, each 1 fraction unit */
+}
+
+/* Make last button take up 2 grid slots horizontally */
+.grid-container-practice > a:nth-child(5) {
+  grid-column: span 2;
+}
+
+.grid-container-practice a {
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.5);
+  font-size: 2em;
+  cursor: pointer;
+  transition: 0.15s ease-in-out;
+  /*overflow: hidden; /* Ensure the pseudo-element doesn't overflow the button */ /*Not sure if it even does anything*/
+  color: #dadada; /* Set text color for better visibility */
+  font-weight: bold;    
+
+  /* Each if needed to keep Text in center of image */
+  display: flex; 
+  justify-content: center;
+  align-items: center;
+}
+
+.grid-container-practice a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.05;
+  transition: opacity 0.15s ease-in-out;
+  z-index: 0; /* Ensure the pseudo-element is behind the text */
+}
+
+/* Specific background images for each button */
+.grid-container-practice > a:nth-child(1)::before {
+  background-image: url(../assets/images/englishBlue.png);
+}
+
+.grid-container-practice > a:nth-child(2)::before {
+  background-image: url(../assets/images/germanBlue.png);
+}
+
+.grid-container-practice > a:nth-child(3)::before {
+  background-image: url(../assets/images/mixBlue.png);
+}
+
+.grid-container-practice > a:nth-child(4)::before {
+  background-image: url(../assets/images/bigBrain.png);
+}
+
+.grid-container-practice > a:nth-child(5)::before {
+  background-image: url(../assets/images/coolCat.png);
+}
+
+.grid-container-practice a:hover { /* Changes text on image to back on hover */
+  color: #000;
+}
+
+.grid-container-practice a:hover::before { /* Image fades in on hover */
+  opacity: 1;
+}
+
+.grid-container-practice a span {
+  z-index: 1; /* Ensure the text is above the pseudo-element on hover */
 }
