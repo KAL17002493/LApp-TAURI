@@ -247,7 +247,7 @@ h1 {
 /*### HOME-PAGE ###*/
 /*### Display list of all words saved in db ###*/
 .word-list {
-  scrollbar-color: #8b4aa37c #428194;
+  scrollbar-color: #3e0c507c #428194;
   flex-grow: 1;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -259,12 +259,12 @@ h1 {
 
 .word-list ul {
   list-style: none;
-  margin: 10px 20px;
+  margin: 0px 20px;
   padding: 0;
 }
 
 .word-list li {
-  position: relative; /* Position the delete button correctly */
+  position: relative; /* Position the delete button correctly, this has to stay*/
   padding: 10px;
   border-bottom: 1px solid #000;
   color: #000000;
@@ -320,4 +320,36 @@ h1 {
 
 .word-list button:hover {
   background-color: rgba(240, 29, 29, 0.85);
+}
+
+/******************************************************/
+.word-count {
+  height: 180px;
+  width: 180px;
+  background-image: linear-gradient(to right, #F4BB44 , #fdde9a);
+  border-radius: 5px;
+  border: #000 solid 1.5px;
+
+  display: flex;             /* Enables flexbox layout */
+  flex-direction: column;    /* Arranges children in a column */
+  justify-content: center;   /* Centers children vertically */
+  align-items: center;       /* Centers children horizontally */
+  
+  text-align: center;        /* Centers text horizontally */
+}
+
+.word-count h1 {
+  margin: 0;
+  padding: 0;
+  
+  font-size: 90px;
+  color: #000;
+  font-weight: lighter;
+}
+
+.word-count p {
+  margin: 0;
+  padding: 0;
+  font-size: 25px;
+  color: #000;
 }

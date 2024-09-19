@@ -75,7 +75,7 @@ function displayWords(words) {
 // Display the word count in the DOM
 function displayWordCount(count) {
     const wordCountElement = document.querySelector('#word-count');
-    wordCountElement.textContent = `Total Words: ${count}`;
+    wordCountElement.textContent = `${count}`;
 }
 
 // Handle form submission
