@@ -243,3 +243,81 @@ h1 {
 .grid-container-practice a span {
   z-index: 1; /* Ensure the text is above the pseudo-element on hover */
 }
+
+/*### HOME-PAGE ###*/
+/*### Display list of all words saved in db ###*/
+.word-list {
+  scrollbar-color: #8b4aa37c #428194;
+  flex-grow: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  overflow-x: hidden;
+  border-radius: 5px;
+  height: 400px;
+  background-color: rgb(74, 142, 163);
+}
+
+.word-list ul {
+  list-style: none;
+  margin: 10px 20px;
+  padding: 0;
+}
+
+.word-list li {
+  position: relative; /* Position the delete button correctly */
+  padding: 10px;
+  border-bottom: 1px solid #000;
+  color: #000000;
+  font-size: 1.2rem;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.word-list li:hover {
+  background-color: rgb(59, 113, 129);
+}
+
+.word-list li .english-word {
+  width: 40%;
+  text-align: left;
+}
+
+.word-list li .german-word {
+  width: 40%;
+  text-align: left;
+  margin-left: auto;
+}
+
+.word-list li p {
+  margin: 0;
+}
+
+.word-list a.word-link {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+
+.word-list button {
+  background-color: rgba(224, 22, 22, 0.65);
+  color: black;
+  border-radius: 2px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: 0.12s ease-in-out;
+  margin-left: 10px;
+
+  position: absolute;
+  right: 10px; /* Aligns the button to the right of the list item */
+  top: 50%; /* Centers the button vertically */
+  transform: translateY(-50%);
+  z-index: 1; /* Ensures the button is on top of the link */
+}
+
+.word-list button:hover {
+  background-color: rgba(240, 29, 29, 0.85);
+}

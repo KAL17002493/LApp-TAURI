@@ -22,10 +22,43 @@ function displayWords(words) {
     wordsContainer.innerHTML = '';  // Clear any existing content
 
     words.forEach(word => {
-        const wordElement = document.createElement('div');
-        wordElement.classList.add('word-item');  // Add class for styling
-        wordElement.textContent = `${word.english_word} - ${word.german_word} (Added on: ${word.date_added})`;
-        wordsContainer.appendChild(wordElement);
+        // Create a list item for each word
+        const listItem = document.createElement('li');
+        listItem.classList.add('word-item');
+        listItem.id = word.id;  // Set the id for the list item
+
+        // Create a link element
+        const linkElement = document.createElement('a');
+        linkElement.classList.add('word-link');
+        linkElement.href = `/edit-word/${word.id}`;  // Link to edit the word
+
+        // Create the English word paragraph
+        const englishWordElement = document.createElement('p');
+        englishWordElement.classList.add('english-word');
+        englishWordElement.textContent = word.english_word;
+
+        // Create the German word paragraph
+        const germanWordElement = document.createElement('p');
+        germanWordElement.classList.add('german-word');
+        germanWordElement.textContent = word.german_word;
+
+        // Append the word details to the link
+        linkElement.appendChild(englishWordElement);
+        linkElement.appendChild(germanWordElement);
+
+        // Create the delete button
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.onclick = function () {
+            markForDeletion(word.id, this);
+        };
+
+        // Append the link and delete button to the list item
+        listItem.appendChild(linkElement);
+        listItem.appendChild(deleteButton);
+
+        // Append the list item to the container (ul element)
+        wordsContainer.appendChild(listItem);
     });
 }
 
@@ -49,7 +82,6 @@ document.querySelector("#word-form").addEventListener("submit", async (event) =>
 
 // Fetch words when the page loads
 document.addEventListener('DOMContentLoaded', fetchWords);
-
 
 
 
