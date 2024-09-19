@@ -58,7 +58,7 @@ struct Todo {
     status: TodoStatus,
 }
 
-#[tauri::command]
+#[tauri::command] //Add a new word to the database
 async fn add_word(
     state: tauri::State<'_, AppState>, 
     english_word: String,
@@ -86,7 +86,20 @@ struct Word {
     date_added: Option<String>,  // Date added (optional if you want)
 }
 
-#[tauri::command]
+#[tauri::command] //Get word count
+async fn db_word_count(state: tauri::State<'_, AppState>) -> Result<i64, String> {
+    let db = &state.db;
+
+    // Query to count the total number of words
+    let count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM word")
+        .fetch_one(db)
+        .await
+        .map_err(|e| format!("Failed to get word count: {}", e))?;
+
+    Ok(count.0)  // Return the count
+}
+
+#[tauri::command] //Get all words from the database
 async fn get_words(state: tauri::State<'_, AppState>) -> Result<Vec<Word>, String> {
     let db = &state.db;
 
@@ -168,7 +181,8 @@ async fn main() {
             update_todo,
             delete_todo,
             add_word,
-            get_words
+            get_words,
+            db_word_count
         ])
         .build(tauri::generate_context!())
         .expect("error while building Tauri application");

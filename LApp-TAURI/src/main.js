@@ -2,17 +2,27 @@ const { invoke } = window.__TAURI__.tauri;
 
 // Add a word
 async function addWord(english_word, german_word) {
-    console.log("Adding word:", { english_word, german_word }); // Debugging line
+    //console.log("Adding word:", { english_word, german_word });  // Debugging line
     return await invoke("add_word", { englishWord: english_word, germanWord: german_word });
 }
 
 // Fetch and display words
 async function fetchWords() {
     try {
-        const words = await invoke('get_words');  // Call the Tauri command
+        const words = await invoke('get_words');  // Call the Tauri command to get words
         displayWords(words);  // Display the fetched words
     } catch (error) {
         console.error('Error fetching words:', error);
+    }
+}
+
+// Fetch the total word count
+async function fetchWordCount() {
+    try {
+        const count = await invoke('db_word_count');  // Call the Tauri command for word count
+        displayWordCount(count);  // Display the total count
+    } catch (error) {
+        console.error('Error fetching word count:', error);
     }
 }
 
@@ -50,7 +60,7 @@ function displayWords(words) {
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Delete';
         deleteButton.onclick = function () {
-            markForDeletion(word.id, this);
+            markForDeletion(word.id, this);  // Handle deletion
         };
 
         // Append the link and delete button to the list item
@@ -60,6 +70,12 @@ function displayWords(words) {
         // Append the list item to the container (ul element)
         wordsContainer.appendChild(listItem);
     });
+}
+
+// Display the word count in the DOM
+function displayWordCount(count) {
+    const wordCountElement = document.querySelector('#word-count');
+    wordCountElement.textContent = `Total Words: ${count}`;
 }
 
 // Handle form submission
@@ -73,15 +89,19 @@ document.querySelector("#word-form").addEventListener("submit", async (event) =>
         englishInput.value = "";
         germanInput.value = "";
 
-        // Fetch and display the updated list of words after adding
-        await fetchWords();
+        await fetchWords();  // Fetch and display the updated list of words
+        await fetchWordCount();  // Fetch and display the updated word count
     } catch (error) {
         console.error("Error adding word:", error);
     }
 });
 
-// Fetch words when the page loads
-document.addEventListener('DOMContentLoaded', fetchWords);
+// Fetch words and word count when the page loads
+document.addEventListener('DOMContentLoaded', async () => {
+    await fetchWords();  // Fetch and display the words
+    await fetchWordCount();  // Fetch and display the total word count
+});
+
 
 
 
