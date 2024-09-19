@@ -1,5 +1,71 @@
 const { invoke } = window.__TAURI__.tauri;
 
+// Add a word
+async function addWord(english_word, german_word) {
+    console.log("Adding word:", { english_word, german_word }); // Debugging line
+    return await invoke("add_word", { englishWord: english_word, germanWord: german_word });
+}
+
+// Fetch and display words
+async function fetchWords() {
+    try {
+        const words = await invoke('get_words');  // Call the Tauri command
+        displayWords(words);  // Display the fetched words
+    } catch (error) {
+        console.error('Error fetching words:', error);
+    }
+}
+
+// Display the fetched words in the DOM
+function displayWords(words) {
+    const wordsContainer = document.querySelector('#words');
+    wordsContainer.innerHTML = '';  // Clear any existing content
+
+    words.forEach(word => {
+        const wordElement = document.createElement('div');
+        wordElement.classList.add('word-item');  // Add class for styling
+        wordElement.textContent = `${word.english_word} - ${word.german_word} (Added on: ${word.date_added})`;
+        wordsContainer.appendChild(wordElement);
+    });
+}
+
+// Handle form submission
+document.querySelector("#word-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    let englishInput = document.querySelector("#english-word-input");
+    let germanInput = document.querySelector("#german-word-input");
+
+    try {
+        await addWord(englishInput.value, germanInput.value);
+        englishInput.value = "";
+        germanInput.value = "";
+
+        // Fetch and display the updated list of words after adding
+        await fetchWords();
+    } catch (error) {
+        console.error("Error adding word:", error);
+    }
+});
+
+// Fetch words when the page loads
+document.addEventListener('DOMContentLoaded', fetchWords);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 async function addTodo(description) {
     return await invoke("add_todo", { description });
 }
@@ -64,3 +130,4 @@ async function buildTodoList() {
 }
 
 buildTodoList();
+*/

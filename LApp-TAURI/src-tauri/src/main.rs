@@ -7,19 +7,6 @@ use serde::{Deserialize, Serialize}; // For serializing and deserializing JSON d
 use futures::TryStreamExt; // For streaming query results
 use tauri::Manager; // Import Manager trait for manage function
 
-#[derive(Debug, Serialize, Deserialize, sqlx::Type)]
-enum TodoStatus {
-    Incomplete,
-    Complete,
-}
-
-#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
-struct Todo {
-    id: u16,
-    description: String,
-    status: TodoStatus,
-}
-
 //DB connection + setup if needed
 type Db = sqlx::Pool<sqlx::Sqlite>;
 
@@ -58,6 +45,72 @@ async fn setup_db(app: &tauri::App) -> Db {
     db
 }
 
+#[derive(Debug, Serialize, Deserialize, sqlx::Type)]
+enum TodoStatus {
+    Incomplete,
+    Complete,
+}
+
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
+struct Todo {
+    id: u16,
+    description: String,
+    status: TodoStatus,
+}
+
+#[tauri::command]
+async fn add_word(
+    state: tauri::State<'_, AppState>, 
+    english_word: String,
+    german_word: String,
+) -> Result<(), String> {
+    let db = &state.db;
+
+    sqlx::query(
+        "INSERT INTO word (english_word, german_word) VALUES (?1, ?2)"
+    )
+    .bind(english_word)
+    .bind(german_word)
+    .execute(db)
+    .await
+    .map_err(|e| format!("Error adding word: {}", e))?;
+
+    Ok(())
+}
+
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
+struct Word {
+    id: i32,               // Integer type for the primary key
+    english_word: String,   // English word as text
+    german_word: String,    // German word as text
+    date_added: Option<String>,  // Date added (optional if you want)
+}
+
+#[tauri::command]
+async fn get_words(state: tauri::State<'_, AppState>) -> Result<Vec<Word>, String> {
+    let db = &state.db;
+
+    let words: Vec<Word> = sqlx::query_as::<_, Word>("SELECT * FROM word")
+        .fetch_all(db) // `fetch_all` instead of `fetch`
+        .await
+        .map_err(|e| format!("Failed to get words: {}", e))?;
+    
+    Ok(words)
+}
+
+#[tauri::command]
+async fn get_todos(state: tauri::State<'_, AppState>) -> Result<Vec<Todo>, String> {
+    let db = &state.db;
+
+    let todos: Vec<Todo> = sqlx::query_as::<_, Todo>("SELECT * FROM todos")
+        .fetch(db)
+        .try_collect()
+        .await
+        .map_err(|e| format!("Failed to get todos: {}", e))?;
+
+    Ok(todos)
+}
+
 #[tauri::command]
 async fn add_todo(
     state: tauri::State<'_, AppState>, 
@@ -73,19 +126,6 @@ async fn add_todo(
         .map_err(|e| format!("Error saving todo: {}", e))?;
 
     Ok(())
-}
-
-#[tauri::command]
-async fn get_todos(state: tauri::State<'_, AppState>) -> Result<Vec<Todo>, String> {
-    let db = &state.db;
-
-    let todos: Vec<Todo> = sqlx::query_as::<_, Todo>("SELECT * FROM todos")
-        .fetch(db)
-        .try_collect()
-        .await
-        .map_err(|e| format!("Failed to get todos: {}", e))?;
-
-    Ok(todos)
 }
 
 #[tauri::command]
@@ -126,7 +166,9 @@ async fn main() {
             add_todo,
             get_todos,
             update_todo,
-            delete_todo
+            delete_todo,
+            add_word,
+            get_words
         ])
         .build(tauri::generate_context!())
         .expect("error while building Tauri application");

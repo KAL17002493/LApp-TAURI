@@ -19,14 +19,15 @@
     </div>
 
     <div class="whole-content-container">
-      <div class="container">
-        <h1>Todos</h1>
-        <div id="tasks" class="task-list"></div>
-        <form class="row" id="todo-form">
-            <input id="todo-input" placeholder="Enter task description" />
-            <button class="btn" type="submit">Add Todo</button>
+        <!-- Form for adding a word -->
+        <form id="word-form">
+          <input type="text" id="english-word-input" placeholder="English word" required>
+          <input type="text" id="german-word-input" placeholder="German word" required>
+          <button type="submit">Add Word</button>
         </form>
-      </div>
+
+        <!-- Container to display words -->
+        <div id="words"></div>
     </div>
     
     
