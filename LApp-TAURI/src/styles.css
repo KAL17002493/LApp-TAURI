@@ -245,6 +245,34 @@ h1 {
 }
 
 /*### HOME-PAGE ###*/
+.index-container {
+  display: flex;
+}
+
+/* LEFT CONTAINER*/
+.left-container {
+  width: 180px;
+}
+
+.left-container input {
+  width: 100%;
+  padding: 10px 0;
+  margin-bottom: 5px;
+}
+
+.left-container .add-word-button {
+  width: 100%;
+  padding: 10px 0;
+  margin-bottom: 5px;
+  background-color: green;
+  color: #0f0f0f;
+}
+
+/* RIGHT CONTAINER */
+.right-container {
+  width: 100%;
+}
+
 /*### Display list of all words saved in db ###*/
 .word-list {
   scrollbar-color: #3e0c507c #428194;
@@ -328,7 +356,7 @@ h1 {
   width: 180px;
   background-image: linear-gradient(to right, #F4BB44 , #fdde9a);
   border-radius: 5px;
-  border: #000 solid 1.5px;
+  /*border: #000 solid 1.5px;*/
 
   display: flex;             /* Enables flexbox layout */
   flex-direction: column;    /* Arranges children in a column */
