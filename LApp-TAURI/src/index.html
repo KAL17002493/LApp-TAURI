@@ -19,7 +19,34 @@
     </div>
 
     <div class="whole-content-container">
-      <h1>Home</h1>
+      <div class="index-container">
+
+        <div class="left-container">
+          <!-- Container to display the total word count -->
+          <div class="word-count">
+            <h1 id="word-count"></h1> <!-- Word count will be updated here -->
+            <p>Word Count</p>
+          </div>                    
+
+          <!-- Form for adding a word -->
+          <form class="add-word-container" id="word-form">
+            <input type="text" id="english-word-input" placeholder="English word" autocomplete="off" required>
+            <input type="text" id="german-word-input" placeholder="German word" autocomplete="off" required>
+            <button type="submit" class="add-word-button">Add Word</button>
+          </form>
+        </div>
+
+        <div class="right-container">
+          <!-- Container to display words -->
+          <div class="word-list">
+            <ul id="words"></ul> <!-- Words will be displayed here as list items -->
+          </div>
+        </div>
+
+      </div> <!-- End of index-container -->
+    </div> <!-- End of whole-content-container -->
+    
+    
 
     </div>
   </body>
