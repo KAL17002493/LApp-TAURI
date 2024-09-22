@@ -203,8 +203,6 @@ h1 {
 /* LEFT CONTAINER*/
 .left-container {
   width: 180px;
-  background-color: chocolate;
-  
   display: flex;
   justify-content: space-between;
   flex-direction: column;
@@ -237,8 +235,14 @@ h1 {
   margin: 0; /* Remove any default margin */
 }
 
+.search-word {
+  width: 100%;
+  margin-bottom: 5px;
+  padding: 10px 0;
+  text-align: center;
+}
+
 .add-word-container {
-  background-color: brown;
   margin-top: 10px;
   margin-bottom: 10px;
 }
