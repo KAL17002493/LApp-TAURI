@@ -58,26 +58,6 @@ struct Todo {
     status: TodoStatus,
 }
 
-#[tauri::command] //Add a new word to the database
-async fn add_word(
-    state: tauri::State<'_, AppState>, 
-    english_word: String,
-    german_word: String,
-) -> Result<(), String> {
-    let db = &state.db;
-
-    sqlx::query(
-        "INSERT INTO word (english_word, german_word) VALUES (?1, ?2)"
-    )
-    .bind(english_word)
-    .bind(german_word)
-    .execute(db)
-    .await
-    .map_err(|e| format!("Error adding word: {}", e))?;
-
-    Ok(())
-}
-
 #[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 struct Word {
     id: i32,               // Integer type for the primary key
@@ -125,6 +105,52 @@ async fn get_todos(state: tauri::State<'_, AppState>) -> Result<Vec<Todo>, Strin
 }
 
 #[tauri::command]
+async fn delete_word(state: tauri::State<'_, AppState>, id: u16) -> Result<(), String> {
+    let db = &state.db;
+
+    sqlx::query("DELETE FROM word WHERE id = ?1")
+        .bind(id)
+        .execute(db)
+        .await
+        .map_err(|e| format!("Could not delete word: {}", e))?;
+
+    Ok(())
+}
+
+#[tauri::command]
+async fn delete_todo(state: tauri::State<'_, AppState>, id: u16) -> Result<(), String> {
+    let db = &state.db;
+
+    sqlx::query("DELETE FROM todos WHERE id = ?1")
+        .bind(id)
+        .execute(db)
+        .await
+        .map_err(|e| format!("Could not delete todo: {}", e))?;
+
+    Ok(())
+}
+
+#[tauri::command] //Add a new word to the database
+async fn add_word(
+    state: tauri::State<'_, AppState>, 
+    english_word: String,
+    german_word: String,
+) -> Result<(), String> {
+    let db = &state.db;
+
+    sqlx::query(
+        "INSERT INTO word (english_word, german_word) VALUES (?1, ?2)"
+    )
+    .bind(english_word)
+    .bind(german_word)
+    .execute(db)
+    .await
+    .map_err(|e| format!("Error adding word: {}", e))?;
+
+    Ok(())
+}
+
+#[tauri::command]
 async fn add_todo(
     state: tauri::State<'_, AppState>, 
     description: &str
@@ -159,19 +185,6 @@ async fn update_todo(
     Ok(())
 }
 
-#[tauri::command]
-async fn delete_todo(state: tauri::State<'_, AppState>, id: u16) -> Result<(), String> {
-    let db = &state.db;
-
-    sqlx::query("DELETE FROM todos WHERE id = ?1")
-        .bind(id)
-        .execute(db)
-        .await
-        .map_err(|e| format!("Could not delete todo: {}", e))?;
-
-    Ok(())
-}
-
 #[tokio::main]
 async fn main() {
     let app = tauri::Builder::default()
@@ -182,7 +195,8 @@ async fn main() {
             delete_todo,
             add_word,
             get_words,
-            db_word_count
+            db_word_count,
+            delete_word
         ])
         .build(tauri::generate_context!())
         .expect("error while building Tauri application");

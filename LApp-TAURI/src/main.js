@@ -6,6 +6,13 @@ async function addWord(english_word, german_word) {
     return await invoke("add_word", { englishWord: english_word, germanWord: german_word });
 }
 
+async function deleteWord(id){ // Function to delete word by id
+    await invoke("delete_word", {id});
+
+    await fetchWords();  // Fetch and display the updated list of words
+    await fetchWordCount();  // Fetch and display the updated word count
+}
+
 // Fetch and display words
 async function fetchWords() {
     try {
@@ -60,7 +67,7 @@ function displayWords(words) {
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Delete';
         deleteButton.onclick = function () {
-            markForDeletion(word.id, this);  // Handle deletion
+            deleteWord(word.id, this);  // Handle deletion
         };
 
         // Append the link and delete button to the list item
