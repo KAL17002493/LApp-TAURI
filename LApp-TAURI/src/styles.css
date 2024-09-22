@@ -77,6 +77,7 @@ h1 {
 .nav {
   position: absolute;
   bottom: 0;
+  right: 0;
   z-index: 1; /* Ensures nav items are on top of everything */
 }
 
@@ -203,24 +204,10 @@ h1 {
 .left-container {
   width: 180px;
   background-color: chocolate;
-}
-
-.add-word-container {
-  background-color: brown;
-  margin-top: 10px;
-}
-
-.add-word-container input {
-  width: 100%;
-  margin-bottom: 5px;
-  padding: 10px 0;
-  text-align: center;
-}
-
-.add-word-container .add-word-button {
-  width: 100%;
-  background-color: green;
-  color: #0f0f0f;
+  
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
 }
 
 .word-count {
@@ -248,6 +235,25 @@ h1 {
   font-size: 25px;
   color: #000;
   margin: 0; /* Remove any default margin */
+}
+
+.add-word-container {
+  background-color: brown;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.add-word-container input {
+  width: 100%;
+  margin-bottom: 5px;
+  padding: 10px 0;
+  text-align: center;
+}
+
+.add-word-container .add-word-button {
+  width: 100%;
+  background-color: green;
+  color: #0f0f0f;
 }
 
 /* RIGHT CONTAINER */

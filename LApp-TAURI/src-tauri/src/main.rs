@@ -79,11 +79,11 @@ async fn db_word_count(state: tauri::State<'_, AppState>) -> Result<i64, String>
     Ok(count.0)  // Return the count
 }
 
-#[tauri::command] //Get all words from the database
+#[tauri::command] //Get all words from the database, newest word added displayed first
 async fn get_words(state: tauri::State<'_, AppState>) -> Result<Vec<Word>, String> {
     let db = &state.db;
 
-    let words: Vec<Word> = sqlx::query_as::<_, Word>("SELECT * FROM word")
+    let words: Vec<Word> = sqlx::query_as::<_, Word>("SELECT * FROM word ORDER BY date_added DESC")
         .fetch_all(db) // `fetch_all` instead of `fetch`
         .await
         .map_err(|e| format!("Failed to get words: {}", e))?;
