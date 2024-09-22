@@ -1,6 +1,3 @@
-.logo.vanilla:hover {
-  filter: drop-shadow(0 0 2em #ffe21c);
-}
 :root {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
@@ -17,35 +14,8 @@
   -webkit-text-size-adjust: 100%;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: 0.75s;
-}
-
-.logo.tauri:hover {
-  filter: drop-shadow(0 0 2em #24c8db);
-}
-
-.row {
-  display: flex;
-  justify-content: center;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
-}
-
 input,
 button {
-  border-radius: 8px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
@@ -55,27 +25,11 @@ button {
   background-color: #ffffff;
   transition: border-color 0.25s;
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+  outline: none; /* removes the ugly outline when you click on button or input field */
 }
 
-button {
+button { /* best to keep point seperate, if applied to input field it look wrong */
   cursor: pointer;
-}
-
-button:hover {
-  border-color: #396cd8;
-}
-button:active {
-  border-color: #396cd8;
-  background-color: #e8e8e8;
-}
-
-input,
-button {
-  outline: none;
-}
-
-#greet-input {
-  margin-right: 5px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -100,13 +54,10 @@ button {
 
 /* Custom code from here on... */
 /*### GENERAL STUFF ###*/
-body { /* Removes the innate padding */
-  /*border-color: red;
-  border-style: solid;
-  border-width: 1px;*/
-
-  margin: 5px;
+body, html { /* Removes the innate padding */
+  margin: 0;
   padding: 0;
+  height: 100%;
 }
 
 .whole-content-container { /* Container that holds all the content */
@@ -118,7 +69,6 @@ body { /* Removes the innate padding */
 
 h1 {
   text-align: center;
-
   margin: 0;
   padding: 0;
 }
@@ -126,34 +76,32 @@ h1 {
 /*### NAVIGATION ###*/
 .nav {
   position: absolute;
-  top: +180px;
-  left: -100px;
+  bottom: 0;
 }
 
 .nav ul {
-  list-style-type: none;
+  list-style: none;
   margin: 0;
   padding: 0;
-  width: 120px;
+  display: block;
+}
+
+.nav ul li {
+  display: inline-block;
 }
 
 .nav ul li a {
-  display: block;
+  display: inline-block;
   color: #000;
   padding: 8px 16px;
   font-size: 1.2rem;
   text-decoration: none;
   background-color: #f1f1f1;
-
-  /* Temporary border effect */
-  border-width: 1px;
-  border-bottom: solid #2f2f2f;
 }
 
 /*Displaces the nav bar items slighty on hovering over them*/
-.nav ul li:hover {
-  position: relative;
-  left: +100px;
+.nav ul li a:hover {
+  background-color: #428194;
 }
 
 /*### INFO-PAGE ###*/
@@ -247,6 +195,7 @@ h1 {
 /*### HOME-PAGE ###*/
 .index-container {
   display: flex;
+  height: 100%;
 }
 
 /* LEFT CONTAINER*/
@@ -268,9 +217,43 @@ h1 {
   color: #0f0f0f;
 }
 
+.word-count {
+  height: 180px;
+  width: 180px;
+  background-image: linear-gradient(to right, #F4BB44 , #fdde9a);
+  border-radius: 5px;
+  /*border: #000 solid 1.5px;*/
+
+  display: flex;             /* Enables flexbox layout */
+  flex-direction: column;    /* Arranges children in a column */
+  justify-content: center;   /* Centers children vertically */
+  align-items: center;       /* Centers children horizontally */
+  
+  text-align: center;        /* Centers text horizontally */
+}
+
+.word-count h1 {
+  margin: 0;
+  padding: 0;
+  
+  font-size: 90px;
+  color: #000;
+  font-weight: lighter;
+}
+
+.word-count p {
+  margin: 0;
+  padding: 0;
+  font-size: 25px;
+  color: #000;
+}
+
 /* RIGHT CONTAINER */
 .right-container {
-  width: 100%;
+  flex-grow: 1; /* Makes it take the remaining width */
+  display: flex;
+  flex-direction: column; /* This will allow the word-list to grow */
+  height: 100%; /* Ensure the right container fills the available height */
 }
 
 /*### Display list of all words saved in db ###*/
@@ -281,8 +264,9 @@ h1 {
   scrollbar-width: thin;
   overflow-x: hidden;
   border-radius: 5px;
-  height: 400px;
   background-color: rgb(74, 142, 163);
+
+  height: 450px;
 }
 
 .word-list ul {
@@ -330,7 +314,7 @@ h1 {
   color: inherit;
 }
 
-.word-list button {
+.word-list button { /* This is the delete button */
   background-color: rgba(224, 22, 22, 0.65);
   color: black;
   border-radius: 2px;
@@ -348,36 +332,4 @@ h1 {
 
 .word-list button:hover {
   background-color: rgba(240, 29, 29, 0.85);
-}
-
-/******************************************************/
-.word-count {
-  height: 180px;
-  width: 180px;
-  background-image: linear-gradient(to right, #F4BB44 , #fdde9a);
-  border-radius: 5px;
-  /*border: #000 solid 1.5px;*/
-
-  display: flex;             /* Enables flexbox layout */
-  flex-direction: column;    /* Arranges children in a column */
-  justify-content: center;   /* Centers children vertically */
-  align-items: center;       /* Centers children horizontally */
-  
-  text-align: center;        /* Centers text horizontally */
-}
-
-.word-count h1 {
-  margin: 0;
-  padding: 0;
-  
-  font-size: 90px;
-  color: #000;
-  font-weight: lighter;
-}
-
-.word-count p {
-  margin: 0;
-  padding: 0;
-  font-size: 25px;
-  color: #000;
 }
