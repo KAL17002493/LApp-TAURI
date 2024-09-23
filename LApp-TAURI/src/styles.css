@@ -277,7 +277,7 @@ h1 {
   overflow-y: scroll;
   overflow-x: hidden;
   border-radius: 5px;
-  background-color: rgb(74, 142, 163);
+  background-color: #4a8ea3;
 
   height: 500px;
 }
@@ -290,29 +290,29 @@ h1 {
 
 .word-list li {
   position: relative; /* Position the delete button correctly, this has to stay*/
-  padding: 10px;
   border-bottom: 1px solid #000;
   color: #000000;
   font-size: 1.2rem;
-
   display: flex;
   flex-direction: row;
   align-items: center;
 }
 
 .word-list li:hover {
-  background-color: rgb(59, 113, 129);
+  background-color: #3b7181;
 }
 
 .word-list li .english-word {
   width: 40%;
   text-align: left;
+  padding: 10px;
 }
 
 .word-list li .german-word {
   width: 40%;
   text-align: left;
   margin-left: auto;
+  padding: 10px;
 }
 
 .word-list li p {
@@ -322,7 +322,6 @@ h1 {
 .word-list a.word-link {
   display: flex;
   width: 100%;
-  height: 100%;
   text-decoration: none;
   color: inherit;
 }
@@ -345,4 +344,19 @@ h1 {
 
 .word-list button:hover {
   background-color: rgba(240, 29, 29, 0.85);
+}
+
+.english-word-update, .german-word-update{
+  padding-top: 11px;
+  padding-bottom: 11px;
+
+  box-shadow: none;
+}
+
+.german-word-update{
+  background: linear-gradient(90deg ,#0f0f0f98 70%, #4a8ea3);
+}
+
+.word-list .update-word-button{
+  background-color: rgba(23, 173, 43, 0.65);
 }

@@ -45,19 +45,6 @@ async fn setup_db(app: &tauri::App) -> Db {
     db
 }
 
-#[derive(Debug, Serialize, Deserialize, sqlx::Type)]
-enum TodoStatus {
-    Incomplete,
-    Complete,
-}
-
-#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
-struct Todo {
-    id: u16,
-    description: String,
-    status: TodoStatus,
-}
-
 #[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 struct Word {
     id: i32,               // Integer type for the primary key
@@ -77,57 +64,6 @@ async fn db_word_count(state: tauri::State<'_, AppState>) -> Result<i64, String>
         .map_err(|e| format!("Failed to get word count: {}", e))?;
 
     Ok(count.0)  // Return the count
-}
-
-#[tauri::command] //Get all words from the database, newest word added displayed first
-async fn get_words(state: tauri::State<'_, AppState>) -> Result<Vec<Word>, String> {
-    let db = &state.db;
-
-    let words: Vec<Word> = sqlx::query_as::<_, Word>("SELECT * FROM word ORDER BY date_added DESC")
-        .fetch_all(db) // `fetch_all` instead of `fetch`
-        .await
-        .map_err(|e| format!("Failed to get words: {}", e))?;
-    
-    Ok(words)
-}
-
-#[tauri::command]
-async fn get_todos(state: tauri::State<'_, AppState>) -> Result<Vec<Todo>, String> {
-    let db = &state.db;
-
-    let todos: Vec<Todo> = sqlx::query_as::<_, Todo>("SELECT * FROM todos")
-        .fetch(db)
-        .try_collect()
-        .await
-        .map_err(|e| format!("Failed to get todos: {}", e))?;
-
-    Ok(todos)
-}
-
-#[tauri::command]
-async fn delete_word(state: tauri::State<'_, AppState>, id: u16) -> Result<(), String> {
-    let db = &state.db;
-
-    sqlx::query("DELETE FROM word WHERE id = ?1")
-        .bind(id)
-        .execute(db)
-        .await
-        .map_err(|e| format!("Could not delete word: {}", e))?;
-
-    Ok(())
-}
-
-#[tauri::command]
-async fn delete_todo(state: tauri::State<'_, AppState>, id: u16) -> Result<(), String> {
-    let db = &state.db;
-
-    sqlx::query("DELETE FROM todos WHERE id = ?1")
-        .bind(id)
-        .execute(db)
-        .await
-        .map_err(|e| format!("Could not delete todo: {}", e))?;
-
-    Ok(())
 }
 
 #[tauri::command] //Add a new word to the database
@@ -150,24 +86,44 @@ async fn add_word(
     Ok(())
 }
 
-#[tauri::command]
-async fn add_todo(
-    state: tauri::State<'_, AppState>, 
-    description: &str
-) -> Result<(), String> {
+#[tauri::command] //Get all words from the database, newest word added displayed first
+async fn get_words(state: tauri::State<'_, AppState>) -> Result<Vec<Word>, String> {
     let db = &state.db;
 
-    sqlx::query("INSERT INTO todos (description, status) VALUES (?1, ?2)")
-        .bind(description)
-        .bind(TodoStatus::Incomplete) // Default status is Incomplete
+    let words: Vec<Word> = sqlx::query_as::<_, Word>("SELECT * FROM word ORDER BY date_added DESC")
+        .fetch_all(db) // `fetch_all` instead of `fetch`
+        .await
+        .map_err(|e| format!("Failed to get words: {}", e))?;
+    
+    Ok(words)
+}
+
+#[tauri::command] //Get single word by Id
+async fn get_word_by_id(state: tauri::State<'_, AppState>) -> Result<Vec<Word>, String> {
+    let db = &state.db;
+
+    let words: Vec<Word> = sqlx::query_as::<_, Word>("SELECT * FROM word WHERE id = ?")
+        .fetch_all(db) // `fetch_all` instead of `fetch`
+        .await
+        .map_err(|e| format!("Failed to get words: {}", e))?;
+    
+    Ok(words)
+}
+
+#[tauri::command]
+async fn delete_word(state: tauri::State<'_, AppState>, id: u16) -> Result<(), String> {
+    let db = &state.db;
+
+    sqlx::query("DELETE FROM word WHERE id = ?1")
+        .bind(id)
         .execute(db)
         .await
-        .map_err(|e| format!("Error saving todo: {}", e))?;
+        .map_err(|e| format!("Could not delete word: {}", e))?;
 
     Ok(())
 }
 
-#[tauri::command]
+/*#[tauri::command]
 async fn update_todo(
     state: tauri::State<'_, AppState>, 
     todo: Todo
@@ -183,20 +139,17 @@ async fn update_todo(
         .map_err(|e| format!("Could not update todo: {}", e))?;
 
     Ok(())
-}
+}*/
 
 #[tokio::main]
 async fn main() {
     let app = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            add_todo,
-            get_todos,
-            update_todo,
-            delete_todo,
             add_word,
             get_words,
             db_word_count,
-            delete_word
+            delete_word,
+            get_word_by_id
         ])
         .build(tauri::generate_context!())
         .expect("error while building Tauri application");

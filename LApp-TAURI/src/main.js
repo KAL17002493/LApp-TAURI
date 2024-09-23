@@ -13,6 +13,15 @@ async function deleteWord(id){ // Function to delete word by id
     await fetchWordCount();  // Fetch and display the updated word count
 }
 
+/*async function fetchWordById(id){
+    try {
+        const word = await invoke('get_word_by_id', {id});
+        console.log(word);  // Display the fetched words
+    } catch (error) {
+        console.error('Error fetching word by id:', error);
+    }
+}*/
+
 // Fetch and display words
 async function fetchWords() {
     try {
@@ -44,11 +53,6 @@ function displayWords(words) {
         listItem.classList.add('word-item');
         listItem.id = word.id;  // Set the id for the list item
 
-        // Create a link element
-        const linkElement = document.createElement('a');
-        linkElement.classList.add('word-link');
-        linkElement.href = `/edit-word/${word.id}`;  // Link to edit the word
-
         // Create the English word paragraph
         const englishWordElement = document.createElement('p');
         englishWordElement.classList.add('english-word');
@@ -58,6 +62,18 @@ function displayWords(words) {
         const germanWordElement = document.createElement('p');
         germanWordElement.classList.add('german-word');
         germanWordElement.textContent = word.german_word;
+
+        // Create a link element (which will act as the "edit" trigger)
+        const linkElement = document.createElement('a');
+        linkElement.classList.add('word-link');
+        linkElement.href = '#'; // Use '#' to avoid navigation
+
+        // Add click event listener to the link
+        linkElement.addEventListener('click', function (event) {
+            event.preventDefault();  // Prevent navigation or default behavior
+            // Switch to update mode (edit the current list item)
+            switchToUpdateMode(listItem, word);
+        });
 
         // Append the word details to the link
         linkElement.appendChild(englishWordElement);
@@ -78,6 +94,43 @@ function displayWords(words) {
         wordsContainer.appendChild(listItem);
     });
 }
+
+// Switch the clicked list item to update mode
+function switchToUpdateMode(listItem, word) {
+    // Clear the list item's current content
+    listItem.innerHTML = '';
+
+    // Create input fields for editing
+    const englishWordInput = document.createElement('input');
+    englishWordInput.type = 'text';
+    englishWordInput.value = word.english_word;
+    englishWordInput.classList.add('english-word-update');
+
+    const germanWordInput = document.createElement('input');
+    germanWordInput.type = 'text';
+    germanWordInput.value = word.german_word;
+    germanWordInput.classList.add('german-word-update');
+
+    // Create the update button
+    const updateButton = document.createElement('button');
+    updateButton.textContent = 'Update';
+    updateButton.onclick = function () {
+        updateWord(word.id, englishWordInput.value, germanWordInput.value, listItem);  // Handle update
+    };
+    updateButton.classList.add("update-word-button");
+    
+    // Append inputs and buttons to the list item
+    listItem.appendChild(englishWordInput);
+    listItem.appendChild(germanWordInput);
+    listItem.appendChild(updateButton);
+}
+
+/*document.getElementsByClassName("right-container")[0].addEventListener(
+    "click", () => {
+        // Accessing the first element in the HTMLCollection
+        document.getElementsByClassName("word-list")[0].hidden = true;
+        document.getElementsByClassName("word-update")[0].hidden = false;
+    }, false);*/
 
 // Display the word count in the DOM
 function displayWordCount(count) {
@@ -134,79 +187,3 @@ if (searchWordErrorRemove)
 
 
 
-
-
-
-
-
-
-
-
-
-
-/*
-async function addTodo(description) {
-    return await invoke("add_todo", { description });
-}
-
-async function getTodos() {
-    return await invoke("get_todos");
-}
-
-async function updateTodo(todo) {
-    return await invoke("update_todo", { todo });
-}
-
-async function deleteTodo(id) {
-    return await invoke("delete_todo", { id });
-}
-
-document.querySelector("#todo-form").addEventListener("submit", (event) => {
-  event.preventDefault();
-  let input = document.querySelector("#todo-input");
-  addTodo(input.value).then(() => {
-      buildTodoList();
-  });
-  input.value = "";
-});
-
-async function buildTodoList() {
-  let todos = await getTodos();
-  let tasksContainer = document.querySelector("#tasks");
-  tasksContainer.innerHTML = "";
-
-  todos.forEach((todo) => {
-      let div = document.createElement("div");
-      div.innerHTML = `
-          <label>
-              <input type="checkbox" data-id="${todo.id}" ${todo.status === 'Complete' ? 'checked' : ''}>
-              ${todo.description}
-          </label>
-          <button class="delete" data-id="${todo.id}">Delete</button>
-      `;
-      tasksContainer.appendChild(div);
-  });
-
-  // Handle checkbox updates for status
-  document.querySelectorAll("input[type=checkbox]").forEach((checkbox) => {
-      checkbox.addEventListener("change", async (event) => {
-          let todoId = event.target.getAttribute("data-id");
-          let todo = todos.find(t => t.id == todoId);
-          todo.status = event.target.checked ? "Complete" : "Incomplete";
-          await updateTodo(todo);
-          buildTodoList();
-      });
-  });
-
-  // Handle delete functionality
-  document.querySelectorAll(".delete").forEach((button) => {
-      button.addEventListener("click", async (event) => {
-          let id = event.target.getAttribute("data-id");
-          await deleteTodo(parseInt(id));
-          buildTodoList();
-      });
-  });
-}
-
-buildTodoList();
-*/
