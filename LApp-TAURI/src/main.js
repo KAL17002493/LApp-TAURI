@@ -265,4 +265,12 @@ if (searchInput) {
             }
         });
     });
+
+    document.getElementsByClassName("clear-search")[0].addEventListener("click", function() {
+        //Clear the input field
+        searchInput.value = '';
+        //Create a new event and force trigger it (This unusual method of clearing the search field is needed because of how the search feature itself has been implemented)
+        const event = new Event('input'); 
+        searchInput.dispatchEvent(event);
+    });
 }

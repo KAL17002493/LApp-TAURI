@@ -244,11 +244,33 @@ h1 {
   margin: 0; /* Remove any default margin */
 }
 
+.search-word-container{
+  position: relative;
+}
+
 .search-word {
   width: 100%;
   margin-bottom: 5px;
   padding: 10px 0;
   text-align: center;
+}
+
+.clear-search {
+  background-color: #0000002d;;
+  outline: none;
+  box-shadow: none;
+  transition: 0.09s ease-in-out;
+  color: #63636398;
+
+  position: absolute;
+  right: 0;
+}
+
+.clear-search:hover{
+
+  background-color: #421b1b5d;;
+  outline: none;
+  box-shadow: none;
 }
 
 .add-word-container {
@@ -318,7 +340,7 @@ h1 {
 }
 
 .word-list li .german-word {
-  width: 40%;
+  width: 50%;
   text-align: left;
   margin-left: auto;
   padding: 10px;
