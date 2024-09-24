@@ -13,14 +13,32 @@ async function deleteWord(id){ // Function to delete word by id
     await fetchWordCount();  // Fetch and display the updated word count
 }
 
-/*async function fetchWordById(id){
-    try {
-        const word = await invoke('get_word_by_id', {id});
-        console.log(word);  // Display the fetched words
-    } catch (error) {
-        console.error('Error fetching word by id:', error);
-    }
-}*/
+// Function to update the word in the database
+function updateWord(id, englishWord, germanWord, listItem) {
+    // Invoke the Tauri command 'update_word'
+    window.__TAURI__.invoke('update_word', {
+      word: {
+        id: id,
+        english_word: englishWord,
+        german_word: germanWord
+      }
+    })
+    .then(() => {
+      console.log("Word updated successfully");
+  
+      // Use revertToViewMode to update the UI after successful update
+      revertToViewMode(listItem, {
+        id: id,
+        english_word: englishWord,
+        german_word: germanWord
+      });
+    })
+    .catch((error) => {
+      console.error("Error updating word:", error);
+      alert("Failed to update word");
+    });
+  }
+  
 
 // Fetch and display words
 async function fetchWords() {
@@ -42,7 +60,7 @@ async function fetchWordCount() {
     }
 }
 
-// Display the fetched words in the DOM
+// Display the fetched words in the DOM for initially item display (revert function further down reloads individual items)
 function displayWords(words) {
     const wordsContainer = document.querySelector('#words');
     wordsContainer.innerHTML = '';  // Clear any existing content
@@ -115,22 +133,95 @@ function switchToUpdateMode(listItem, word) {
     const updateButton = document.createElement('button');
     updateButton.textContent = 'Update';
     updateButton.onclick = function () {
+        clearCountdown(listItem); // Clear the timer when the update happens
         updateWord(word.id, englishWordInput.value, germanWordInput.value, listItem);  // Handle update
     };
     updateButton.classList.add("update-word-button");
-    
+
     // Append inputs and buttons to the list item
     listItem.appendChild(englishWordInput);
     listItem.appendChild(germanWordInput);
     listItem.appendChild(updateButton);
+
+    // Clear any existing timer for this list item
+    clearCountdown(listItem);
+
+    // Start the countdown for this specific list item
+    startCountdown(listItem, word);
 }
 
-/*document.getElementsByClassName("right-container")[0].addEventListener(
-    "click", () => {
-        // Accessing the first element in the HTMLCollection
-        document.getElementsByClassName("word-list")[0].hidden = true;
-        document.getElementsByClassName("word-update")[0].hidden = false;
-    }, false);*/
+// Start a countdown timer for a specific list item
+function startCountdown(listItem, word) {
+    let countdown = 5;
+    
+    // Store the timer reference in the list item for future access
+    const timer = setInterval(() => {
+        countdown--;
+        if (countdown <= 0) {
+            clearInterval(timer);
+            console.log(`Time's up for item ${word.id}!`);
+
+            // Revert the list item back to view mode (i.e., exit edit mode)
+            revertToViewMode(listItem, word);
+        }
+    }, 1000);
+
+    // Save the timer reference in the listItem's dataset
+    listItem.dataset.timer = timer;
+}
+
+// Clear any existing countdown timer for the list item
+function clearCountdown(listItem) {
+    const timer = listItem.dataset.timer;
+    if (timer) {
+        clearInterval(timer);  // Clear the specific timer
+        delete listItem.dataset.timer;  // Remove the reference
+    }
+}
+
+// Revert the list item back to view mode
+function revertToViewMode(listItem, word) {
+    // Clear the list item's content
+    listItem.innerHTML = '';
+
+    // Create the English word paragraph
+    const englishWordElement = document.createElement('p');
+    englishWordElement.classList.add('english-word');
+    englishWordElement.textContent = word.english_word;
+
+    // Create the German word paragraph
+    const germanWordElement = document.createElement('p');
+    germanWordElement.classList.add('german-word');
+    germanWordElement.textContent = word.german_word;
+
+    // Create a link element (which will act as the "edit" trigger)
+    const linkElement = document.createElement('a');
+    linkElement.classList.add('word-link');
+    linkElement.href = '#'; // Use '#' to avoid navigation
+
+    // Add click event listener to the link
+    linkElement.addEventListener('click', function (event) {
+        event.preventDefault();  // Prevent navigation or default behavior
+        // Switch to update mode (edit the current list item)
+        switchToUpdateMode(listItem, word);
+    });
+
+    // Append the word details to the link
+    linkElement.appendChild(englishWordElement);
+    linkElement.appendChild(germanWordElement);
+
+    // Create the delete button
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = 'Delete';
+    deleteButton.onclick = function () {
+        deleteWord(word.id, this);  // Handle deletion
+    };
+
+    // Append the link and delete button to the list item
+    listItem.appendChild(linkElement);
+    listItem.appendChild(deleteButton);
+}
+
 
 // Display the word count in the DOM
 function displayWordCount(count) {
@@ -181,9 +272,3 @@ if (searchWordErrorRemove)
         });
     });
 }
-
-
-
-
-
-

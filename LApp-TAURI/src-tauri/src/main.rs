@@ -4,7 +4,7 @@
 use serde::{Deserialize, Serialize}; // For serializing and deserializing JSON data
 //use sqlx::sqlite::SqlitePoolOptions;
 //use sqlx::{Pool, Sqlite}; // For database handling
-use futures::TryStreamExt; // For streaming query results
+//use futures::TryStreamExt; // For streaming query results
 use tauri::Manager; // Import Manager trait for manage function
 
 //DB connection + setup if needed
@@ -98,20 +98,21 @@ async fn get_words(state: tauri::State<'_, AppState>) -> Result<Vec<Word>, Strin
     Ok(words)
 }
 
-#[tauri::command] //Get single word by Id
-async fn get_word_by_id(state: tauri::State<'_, AppState>) -> Result<Vec<Word>, String> {
+#[tauri::command]
+async fn get_word_by_id(state: tauri::State<'_, AppState>, id: i32) -> Result<Word, String> {
     let db = &state.db;
 
-    let words: Vec<Word> = sqlx::query_as::<_, Word>("SELECT * FROM word WHERE id = ?")
-        .fetch_all(db) // `fetch_all` instead of `fetch`
+    let word: Word = sqlx::query_as::<_, Word>("SELECT * FROM word WHERE id = ?")
+        .bind(id)
+        .fetch_one(db)
         .await
-        .map_err(|e| format!("Failed to get words: {}", e))?;
+        .map_err(|e| format!("Failed to get word by id: {}", e))?;
     
-    Ok(words)
+    Ok(word)
 }
 
 #[tauri::command]
-async fn delete_word(state: tauri::State<'_, AppState>, id: u16) -> Result<(), String> {
+async fn delete_word(state: tauri::State<'_, AppState>, id: i32) -> Result<(), String> {
     let db = &state.db;
 
     sqlx::query("DELETE FROM word WHERE id = ?1")
@@ -123,23 +124,23 @@ async fn delete_word(state: tauri::State<'_, AppState>, id: u16) -> Result<(), S
     Ok(())
 }
 
-/*#[tauri::command]
-async fn update_todo(
+#[tauri::command]
+async fn update_word(
     state: tauri::State<'_, AppState>, 
-    todo: Todo
+    word: Word
 ) -> Result<(), String> {
     let db = &state.db;
 
-    sqlx::query("UPDATE todos SET description = ?1, status = ?2 WHERE id = ?3")
-        .bind(todo.description)
-        .bind(todo.status)
-        .bind(todo.id)
+    sqlx::query("UPDATE word SET english_word = ?1, german_word = ?2 WHERE id = ?3")
+        .bind(&word.english_word)
+        .bind(&word.german_word)
+        .bind(word.id)  // Don't forget to bind the `id` as the 3rd parameter
         .execute(db)
         .await
-        .map_err(|e| format!("Could not update todo: {}", e))?;
+        .map_err(|e| format!("Could not update word: {}", e))?;
 
     Ok(())
-}*/
+}
 
 #[tokio::main]
 async fn main() {
@@ -149,7 +150,8 @@ async fn main() {
             get_words,
             db_word_count,
             delete_word,
-            get_word_by_id
+            get_word_by_id,
+            update_word
         ])
         .build(tauri::generate_context!())
         .expect("error while building Tauri application");
