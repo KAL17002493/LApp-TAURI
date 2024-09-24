@@ -1,32 +1,27 @@
 const { invoke } = window.__TAURI__.tauri;
 
-// Add a word
+// Add a word to DB
 async function addWord(english_word, german_word) {
     //console.log("Adding word:", { english_word, german_word });  // Debugging line
     return await invoke("add_word", { englishWord: english_word, germanWord: german_word });
 }
 
+// Delete word from DB
 async function deleteWord(id){ // Function to delete word by id
     await invoke("delete_word", {id});
-
-    await fetchWords();  // Fetch and display the updated list of words
-    await fetchWordCount();  // Fetch and display the updated word count
+    await Promise.all([fetchWords(), fetchWordCount()]);
 }
 
 // Function to update the word in the database
-function updateWord(id, englishWord, germanWord, listItem) {
-    // Invoke the Tauri command 'update_word'
-    window.__TAURI__.invoke('update_word', {
-      word: {
-        id: id,
-        english_word: englishWord,
-        german_word: germanWord
-      }
-    })
-    .then(() => {
+async function updateWord(id, englishWord, germanWord, listItem) {
+    await invoke('update_word', {
+        word: {
+            id: id,
+            english_word: englishWord,
+            german_word: germanWord}
+    }).then(() => {
       console.log("Word updated successfully");
-  
-      // Use revertToViewMode to update the UI after successful update
+
       revertToViewMode(listItem, {
         id: id,
         english_word: englishWord,
@@ -40,7 +35,7 @@ function updateWord(id, englishWord, germanWord, listItem) {
   }
   
 
-// Fetch and display words
+// Fetch and word and run the initial displayWord function
 async function fetchWords() {
     try {
         const words = await invoke('get_words');  // Call the Tauri command to get words
@@ -152,7 +147,7 @@ function switchToUpdateMode(listItem, word) {
 
 // Start a countdown timer for a specific list item
 function startCountdown(listItem, word) {
-    let countdown = 5;
+    let countdown = 10;
     
     // Store the timer reference in the list item for future access
     const timer = setInterval(() => {
@@ -253,10 +248,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     await fetchWordCount();  // Fetch and display the total word count
 });
 
-const searchWordErrorRemove = document.getElementById('searchWord'); //Checks if the input field exists on the page (Removes errors from devtool screen)
-if (searchWordErrorRemove)
-{
-    document.getElementById('searchWord').addEventListener('input', function() {
+const searchInput = document.getElementById('searchWord');
+if (searchInput) {
+    searchInput.addEventListener('input', function() {
         const searchValue = this.value.toLowerCase();
         const wordItems = document.querySelectorAll('.word-item');
         
