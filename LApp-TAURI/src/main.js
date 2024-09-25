@@ -91,10 +91,13 @@ document.getElementsByClassName('word-practice-form')[0].addEventListener('submi
         if (response === "Correct!") {
             // Show success feedback
             document.getElementsByClassName('word-guess-response')[0].innerHTML = "Correct! Well done!";
+            borderColourChange("#08ff291f");
         } else {
             // Show incorrect feedback
             document.getElementsByClassName('word-guess-response')[0].innerHTML = `Guess: ${guess}<br>Answer: ${randomWord.german_word}`;
             console.log(randomWord.german_word)
+
+            borderColourChange("#88111141");
         }
 
         // Optionally fetch and display a new word after each guess
@@ -103,6 +106,22 @@ document.getElementsByClassName('word-practice-form')[0].addEventListener('submi
         console.error("Error submitting guess:", error);
     }
 });
+
+
+function borderColourChange(hexColour) { // Checks colour of the border when a guess is made
+    const element = document.getElementsByClassName("whole-content-container-practice")[0];
+    
+    //Apply the border color change
+    element.style.boxShadow = `inset 0 0 0 10px ${hexColour}`;
+    
+    //Clear any previous timeout to prevent multiple timeouts from executing
+    clearTimeout(element.timeoutId);
+    
+    //Set a new timeout to remove the box shadow after some seconds
+    element.timeoutId = setTimeout(() => {
+        element.style.boxShadow = null;
+    }, 2000);
+}
 
 // Function to submit guess to the backend
 async function submitGuess(guess, correctWordId) {
