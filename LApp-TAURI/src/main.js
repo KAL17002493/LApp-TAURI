@@ -35,11 +35,11 @@ async function updateWord(id, englishWord, germanWord, listItem) {
   }
   
 
-// Fetch and word and run the initial displayWord function
+// Fetch a word and run the initial displayWord function
 async function fetchWords() {
     try {
         const words = await invoke('get_words');  // Call the Tauri command to get words
-        displayWords(words);  // Display the fetched words
+        displayWords(words);  //Pass word to display function
     } catch (error) {
         console.error('Error fetching words:', error);
     }
@@ -54,6 +54,37 @@ async function fetchWordCount() {
         console.error('Error fetching word count:', error);
     }
 }
+
+async function fetchRandomWord() {
+    try {
+        const randomWord = await invoke('get_random_word');  // Call the Tauri command to get words
+        displayRandomWord(randomWord.english_word);  // Display the fetched words
+    } catch (error) {
+        console.error('Error fetching words:', error);
+    }
+}
+
+function displayRandomWord(randomWord){
+    document.getElementsByClassName("word-to-guess")[0].innerHTML = randomWord;
+}
+
+//Run the fetchRandomWord function
+document.addEventListener('DOMContentLoaded', async () => {
+    document.getElementsByClassName("users-guess")[0].focus(); //Auto click on the input field
+    await fetchRandomWord();
+});
+
+
+async function submitGuess(guess, correctWordId) {
+    const response = await window.__TAURI__.invoke("process_guess", { guess, correctWordId });
+    if (response === "Correct!") {
+      // Show success message
+      alert("Correct!");
+    } else {
+      // Show failure message with correct word
+      alert("Incorrect! Try again.");
+    }
+  }
 
 // Display the fetched words in the DOM for initially item display (revert function further down reloads individual items)
 function displayWords(words) {

@@ -142,6 +142,69 @@ async fn update_word(
     Ok(())
 }
 
+#[tauri::command] //Get 1 random word from DB
+async fn get_random_word(state: tauri::State<'_, AppState>) -> Result<Word, String> {
+    let db = &state.db;
+
+    let word: Word = sqlx::query_as::<_, Word>("SELECT * FROM word ORDER BY RANDOM() LIMIT 1")
+        .fetch_one(db)
+        .await
+        .map_err(|e| format!("Failed to fetch random word: {}", e))?;
+    
+    Ok(word)
+}
+
+#[tauri::command] //Prevent word repetition
+async fn get_next_word(state: tauri::State<'_, AppState>, recent_words: Vec<i32>) -> Result<Word, String> {
+    let db = &state.db;
+
+    let query = format!(
+        "SELECT * FROM word WHERE id NOT IN ({}) ORDER BY RANDOM() LIMIT 1",
+        recent_words.iter().map(|id| id.to_string()).collect::<Vec<_>>().join(", ")
+    );
+
+    let word: Word = sqlx::query_as::<_, Word>(&query)
+        .fetch_one(db)
+        .await
+        .map_err(|e| format!("Failed to fetch random word: {}", e))?;
+    
+    Ok(word)
+}
+
+#[tauri::command] //Check if user guess is correct
+async fn check_guess(state: tauri::State<'_, AppState>, guess: String, correct_word_id: i32) -> Result<bool, String> {
+    let db = &state.db;
+
+    // Get the correct word from the database
+    let word: Word = sqlx::query_as::<_, Word>("SELECT * FROM word WHERE id = ?")
+        .bind(correct_word_id)
+        .fetch_one(db)
+        .await
+        .map_err(|e| format!("Failed to fetch correct word: {}", e))?;
+
+    // Compare guess with the correct German word
+    if guess.trim().to_lowercase() == word.german_word.to_lowercase() {
+        Ok(true)  // Guess is correct
+    } else {
+        Ok(false)  // Guess is incorrect
+    }
+}
+
+#[tauri::command] //Sends correct or incorrect guess to frontend
+async fn process_guess(
+    state: tauri::State<'_, AppState>,
+    guess: String,
+    correct_word_id: i32
+) -> Result<String, String> {
+    let is_correct = check_guess(state.clone(), guess, correct_word_id).await?;
+
+    if is_correct {
+        Ok("Correct!".to_string())
+    } else {
+        Ok("Incorrect!".to_string())
+    }
+}
+
 #[tokio::main]
 async fn main() {
     let app = tauri::Builder::default()
@@ -151,7 +214,11 @@ async fn main() {
             db_word_count,
             delete_word,
             get_word_by_id,
-            update_word
+            update_word,
+            get_random_word,
+            get_next_word,
+            check_guess,
+            process_guess
         ])
         .build(tauri::generate_context!())
         .expect("error while building Tauri application");
