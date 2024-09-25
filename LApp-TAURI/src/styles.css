@@ -223,9 +223,14 @@ radial-gradient(circle, rgba(0,0,0,0) 0%, rgba(47,217,24,0.5) 100%) 1;*/
 
 .whole-content-container-practice h1 {
   font-size: 3rem;
-  margin-bottom: 80px; /* Increase gap below the h1 */
+  margin-bottom: 80px; /* Keep this margin to maintain the spacing below */
   max-width: 650px;
   line-height: 1;
+  height: 100px; /* Set a fixed height */
+  display: flex;
+  align-items: center; /* Center the text vertically if it breaks into two lines */
+  justify-content: center; /* Center the text horizontally */
+  text-align: center; /* Ensure the text remains centered */
 }
 
 .users-guess {
@@ -234,7 +239,6 @@ radial-gradient(circle, rgba(0,0,0,0) 0%, rgba(47,217,24,0.5) 100%) 1;*/
   width: 300px;
   color: transparent;
   text-shadow: 0 0 0 #b1b1b1;
-  margin-top: 20px;
   text-align: center;
 }
 
