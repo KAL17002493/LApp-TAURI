@@ -203,6 +203,40 @@ h1 {
   z-index: 1; /* Ensure the text is above the pseudo-element on hover */
 }
 
+/*### Practice choices English, German, Mix etc... ###*/
+.whole-content-container-practice {
+  display: grid;
+  place-items: center; /* Center both vertically and horizontally */
+  height: 100vh; /* Full viewport height */
+  grid-template-columns: 1fr 1fr; /* Split into two equal columns */
+}
+
+.word-practice-form { 
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Places all children elements in center  */
+  grid-column: 1 / span 2; /* Span both columns */
+}
+
+.whole-content-container-practice h1 {
+  font-size: 3rem;
+  margin-bottom: 80px; /* Increase gap below the h1 */
+}
+
+.users-guess {
+  font-size: 1.3rem;
+  padding: 10px 15px;
+  width: 300px;
+  color: transparent;
+  text-shadow: 0 0 0 #000000;
+  margin-top: 20px;
+}
+
+.users-guess::placeholder {
+  font-weight: 500;
+  text-align: center;
+}
+
 /*### HOME-PAGE ###*/
 .index-container {
   display: flex;

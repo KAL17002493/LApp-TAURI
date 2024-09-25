@@ -60,10 +60,11 @@ async function fetchWordCount() {
 if (document.getElementsByClassName("whole-content-container-practice")[0])
 {
 let correctWordId = null;
+let randomWord = "";
 
 async function fetchRandomWord() {
     try {
-        const randomWord = await invoke('get_random_word');  // Call the Tauri command to get words
+        randomWord = await invoke('get_random_word');  // Call the Tauri command to get words
         correctWordId = randomWord.id;
         displayRandomWord(randomWord.english_word);  // Display the fetched words
     } catch (error) {
@@ -92,7 +93,8 @@ document.getElementsByClassName('word-practice-form')[0].addEventListener('submi
             document.getElementsByClassName('word-guess-response')[0].innerHTML = "Correct! Well done!";
         } else {
             // Show incorrect feedback
-            document.getElementsByClassName('word-guess-response')[0].innerHTML = "Incorrect! Try again.";
+            document.getElementsByClassName('word-guess-response')[0].innerHTML = `Guess: ${guess}<br>Answer: ${randomWord.german_word}`;
+            console.log(randomWord.german_word)
         }
 
         // Optionally fetch and display a new word after each guess
@@ -105,11 +107,8 @@ document.getElementsByClassName('word-practice-form')[0].addEventListener('submi
 // Function to submit guess to the backend
 async function submitGuess(guess, correctWordId) {
     const response = await invoke("process_guess", { guess, correctWordId });
-    console.log(response)
     return response;
 }
-
-
 
 //Run the fetchRandomWord function
 document.addEventListener('DOMContentLoaded', async () => {
