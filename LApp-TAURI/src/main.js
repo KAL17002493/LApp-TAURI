@@ -108,20 +108,22 @@ document.getElementsByClassName('word-practice-form')[0].addEventListener('submi
 });
 
 
-function borderColourChange(hexColour) { // Checks colour of the border when a guess is made
+function borderColourChange(hexColour) {
     const element = document.getElementsByClassName("whole-content-container-practice")[0];
-    
-    //Apply the border color change
-    element.style.boxShadow = `inset 0 0 0 10px ${hexColour}`;
-    
-    //Clear any previous timeout to prevent multiple timeouts from executing
+
+    // Apply an elliptical radial gradient that fades quickly from the edges inward
+    element.style.background = `radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 60%, ${hexColour} 100%)`;
+
+    // Clear any previous timeout to prevent multiple timeouts from executing
     clearTimeout(element.timeoutId);
-    
-    //Set a new timeout to remove the box shadow after some seconds
+
+    // Set a new timeout to start fading the background after some seconds
     element.timeoutId = setTimeout(() => {
-        element.style.boxShadow = null;
+        // Set the background to a fully transparent state to trigger the CSS transition
+        element.style.background = 'rgba(0, 0, 0, 0)'; 
     }, 2000);
 }
+
 
 // Function to submit guess to the backend
 async function submitGuess(guess, correctWordId) {
