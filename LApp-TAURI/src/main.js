@@ -55,9 +55,16 @@ async function fetchWordCount() {
     }
 }
 
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
+if (document.getElementsByClassName("whole-content-container-practice")[0])
+{
+let correctWordId = null;
+
 async function fetchRandomWord() {
     try {
         const randomWord = await invoke('get_random_word');  // Call the Tauri command to get words
+        correctWordId = randomWord.id;
         displayRandomWord(randomWord.english_word);  // Display the fetched words
     } catch (error) {
         console.error('Error fetching words:', error);
@@ -68,23 +75,50 @@ function displayRandomWord(randomWord){
     document.getElementsByClassName("word-to-guess")[0].innerHTML = randomWord;
 }
 
+// Handle form submission and check the user's guess
+document.getElementsByClassName('word-practice-form')[0].addEventListener('submit', async function(event) {
+    event.preventDefault();  // Prevent form submission and page reload
+    
+    // Get the user's guess from the input field
+    const guess = document.getElementsByClassName('users-guess')[0].value.trim();
+
+    // Call the submitGuess function with the user's guess and the correct word ID
+    try {
+        const response = await submitGuess(guess, correctWordId);  // Send guess to backend
+        document.getElementsByClassName('users-guess')[0].value = "";  // Clear input field
+
+        if (response === "Correct!") {
+            // Show success feedback
+            document.getElementsByClassName('word-guess-response')[0].innerHTML = "Correct! Well done!";
+        } else {
+            // Show incorrect feedback
+            document.getElementsByClassName('word-guess-response')[0].innerHTML = "Incorrect! Try again.";
+        }
+
+        // Optionally fetch and display a new word after each guess
+        await fetchRandomWord();
+    } catch (error) {
+        console.error("Error submitting guess:", error);
+    }
+});
+
+// Function to submit guess to the backend
+async function submitGuess(guess, correctWordId) {
+    const response = await invoke("process_guess", { guess, correctWordId });
+    console.log(response)
+    return response;
+}
+
+
+
 //Run the fetchRandomWord function
 document.addEventListener('DOMContentLoaded', async () => {
     document.getElementsByClassName("users-guess")[0].focus(); //Auto click on the input field
     await fetchRandomWord();
 });
-
-
-async function submitGuess(guess, correctWordId) {
-    const response = await window.__TAURI__.invoke("process_guess", { guess, correctWordId });
-    if (response === "Correct!") {
-      // Show success message
-      alert("Correct!");
-    } else {
-      // Show failure message with correct word
-      alert("Incorrect! Try again.");
-    }
-  }
+}
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
 
 // Display the fetched words in the DOM for initially item display (revert function further down reloads individual items)
 function displayWords(words) {
