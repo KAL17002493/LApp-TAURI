@@ -211,6 +211,29 @@ h1 {
   grid-template-columns: 1fr 1fr; /* Split into two equal columns */
 }
 
+.whole-content-container-practice a {
+  color: #f6f6f6;
+  background-color: #202020;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0.1;
+  transition: opacity 0.2s ease;
+  text-decoration: none;
+  padding: 2px 8px;
+  font-size: 1rem;
+  border-radius: 0 0 5px 0;
+  transition: linear 0.2s;
+  outline: none;
+}
+
+.whole-content-container-practice a:hover {
+  opacity: 1;
+
+  padding: 6px 12px;
+  font-size: 1.3rem;
+}
 
 .word-practice-form { 
   display: flex;
