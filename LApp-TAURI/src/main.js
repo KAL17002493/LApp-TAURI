@@ -74,6 +74,7 @@ async function fetchRandomWord() {
 
 function displayRandomWord(randomWord){
     document.getElementsByClassName("word-to-guess")[0].innerHTML = randomWord;
+    guessResponseFadeout()
 }
 
 // Handle form submission and check the user's guess
@@ -96,16 +97,16 @@ document.getElementsByClassName('word-practice-form')[0].addEventListener('submi
             // Show success feedback
             responseElement.innerHTML = "Correct!<br>Well done!";
             borderColourChange("#08ff291f");
+            guessResponseFadeout("#08ff299d", "center"); //On correct guess green colour + center text
         } else {
             // Show incorrect feedback
             responseElement.innerHTML = `Guess: ${guess}<br>Answer: ${randomWord.german_word}`;
             console.log(randomWord.german_word);
 
             borderColourChange("#88111141");
+            guessResponseFadeout("#d63434ad", "left"); //Incorrect Guess red colour and text is on left
         }
-
-        // Fade out the response after a delay
-        guessResponseFadeout();
+        
 
         // Optionally fetch and display a new word after each guess
         await fetchRandomWord();
@@ -114,30 +115,36 @@ document.getElementsByClassName('word-practice-form')[0].addEventListener('submi
     }
 });
 
-function guessResponseFadeout() {
+function guessResponseFadeout(textColor, textPos) { 
+    // Hides guess response after a guess has been made
     const element = document.getElementsByClassName("word-guess-response")[0];
 
-    //Clear any previous timeout to prevent multiple timeouts from executing
+    // Clear any previous timeout to prevent multiple timeouts from executing
     clearTimeout(element.timeoutId);
 
-    //Set a new timeout to fade out the response after a few seconds
+    // Set a new timeout to fade out the response after a few seconds
     element.timeoutId = setTimeout(() => {
-        element.style.opacity = '0';  //Change opacity to 0 (better then using hidden tag since changing opacity prevents any elements from moving)
+        element.style.opacity = '0';  // Change opacity to 0
     }, 2000);
 
-    //Add mouse over event listener 
+    // Set initial styles
+    element.style.color = textColor; // Set initial text color
+    element.style.textAlign = textPos; // Set initial text alignment
+    element.style.opacity = '1'; // Ensure it's visible when the function is called
+
+    // Add mouse over event listener 
     element.addEventListener('mouseover', function() {
-        //Clear timeout when hovering over the element
+        // Clear timeout when hovering over the element
         clearTimeout(element.timeoutId);
-        element.style.opacity = '1';  //Ensure it stays visible
+        element.style.opacity = "1";  // Ensure it stays visible
     });
 
     element.addEventListener('mouseout', function() {
-        //Restart the fade-out countdown when the mouse leaves the element
-        clearTimeout(element.timeoutId);  //Clear any active timeouts
+        // Restart the fade-out countdown when the mouse leaves the element
+        clearTimeout(element.timeoutId);  // Clear any active timeouts
         element.timeoutId = setTimeout(() => {
             element.style.opacity = '0';
-        }, 2000);
+        }, 500);
     });
 }
 
@@ -145,7 +152,7 @@ function borderColourChange(hexColour) {
     const element = document.getElementsByClassName("whole-content-container-practice")[0];
 
     // Apply an elliptical radial gradient that fades quickly from the edges inward
-    element.style.background = `radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 70%, ${hexColour} 100%)`;
+    element.style.background = `radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 80%, ${hexColour} 100%)`;
 
     // Clear any previous timeout to prevent multiple timeouts from executing
     clearTimeout(element.timeoutId);
