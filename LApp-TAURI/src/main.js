@@ -88,17 +88,24 @@ document.getElementsByClassName('word-practice-form')[0].addEventListener('submi
         const response = await submitGuess(guess, correctWordId);  // Send guess to backend
         document.getElementsByClassName('users-guess')[0].value = "";  // Clear input field
 
+        //Reset opacity of word-guess-response before showing if guess is correct or not
+        const responseElement = document.getElementsByClassName('word-guess-response')[0];
+        responseElement.style.opacity = '1';
+
         if (response === "Correct!") {
             // Show success feedback
-            document.getElementsByClassName('word-guess-response')[0].innerHTML = "Correct! Well done!";
+            responseElement.innerHTML = "Correct!<br>Well done!";
             borderColourChange("#08ff291f");
         } else {
             // Show incorrect feedback
-            document.getElementsByClassName('word-guess-response')[0].innerHTML = `Guess: ${guess}<br>Answer: ${randomWord.german_word}`;
-            console.log(randomWord.german_word)
+            responseElement.innerHTML = `Guess: ${guess}<br>Answer: ${randomWord.german_word}`;
+            console.log(randomWord.german_word);
 
             borderColourChange("#88111141");
         }
+
+        // Fade out the response after a delay
+        guessResponseFadeout();
 
         // Optionally fetch and display a new word after each guess
         await fetchRandomWord();
@@ -107,12 +114,38 @@ document.getElementsByClassName('word-practice-form')[0].addEventListener('submi
     }
 });
 
+function guessResponseFadeout() {
+    const element = document.getElementsByClassName("word-guess-response")[0];
+
+    //Clear any previous timeout to prevent multiple timeouts from executing
+    clearTimeout(element.timeoutId);
+
+    //Set a new timeout to fade out the response after a few seconds
+    element.timeoutId = setTimeout(() => {
+        element.style.opacity = '0';  //Change opacity to 0 (better then using hidden tag since changing opacity prevents any elements from moving)
+    }, 2000);
+
+    //Add mouse over event listener 
+    element.addEventListener('mouseover', function() {
+        //Clear timeout when hovering over the element
+        clearTimeout(element.timeoutId);
+        element.style.opacity = '1';  //Ensure it stays visible
+    });
+
+    element.addEventListener('mouseout', function() {
+        //Restart the fade-out countdown when the mouse leaves the element
+        clearTimeout(element.timeoutId);  //Clear any active timeouts
+        element.timeoutId = setTimeout(() => {
+            element.style.opacity = '0';
+        }, 2000);
+    });
+}
 
 function borderColourChange(hexColour) {
     const element = document.getElementsByClassName("whole-content-container-practice")[0];
 
     // Apply an elliptical radial gradient that fades quickly from the edges inward
-    element.style.background = `radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 60%, ${hexColour} 100%)`;
+    element.style.background = `radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 70%, ${hexColour} 100%)`;
 
     // Clear any previous timeout to prevent multiple timeouts from executing
     clearTimeout(element.timeoutId);
@@ -123,7 +156,6 @@ function borderColourChange(hexColour) {
         element.style.background = 'rgba(0, 0, 0, 0)'; 
     }, 2000);
 }
-
 
 // Function to submit guess to the backend
 async function submitGuess(guess, correctWordId) {
