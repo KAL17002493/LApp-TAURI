@@ -353,38 +353,41 @@ function revertToViewMode(listItem, word) {
 }
 
 
-// Display the word count in the DOM
+//Display the word count
 function displayWordCount(count) {
     const wordCountElement = document.querySelector('#word-count');
     wordCountElement.textContent = `${count}`;
 }
 
-// Handle form submission
-document.querySelector("#word-form").addEventListener("submit", async (event) => {
-    event.preventDefault();
-    let englishInput = document.querySelector("#english-word-input");
-    let germanInput = document.querySelector("#german-word-input");
+//Home / Index page error remover
+if (document.getElementsByClassName("index-container")[0]) 
+{
+    // Fetch words and word count when the page loads
+    document.addEventListener('DOMContentLoaded', async () => {
+        await fetchWords();  // Fetch and display the words
+        await fetchWordCount();  // Fetch and display the total word count
+    });
 
-    try {
-        await addWord(englishInput.value, germanInput.value);
-        englishInput.value = "";
-        germanInput.value = "";
+    //Handle form submission for saving new words
+    document.querySelector("#word-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        let englishInput = document.querySelector("#english-word-input");
+        let germanInput = document.querySelector("#german-word-input");
 
-        await fetchWords();  // Fetch and display the updated list of words
-        await fetchWordCount();  // Fetch and display the updated word count
-    } catch (error) {
-        console.error("Error adding word:", error);
-    }
-});
+        try {
+            await addWord(englishInput.value, germanInput.value);
+            englishInput.value = "";
+            germanInput.value = "";
 
-// Fetch words and word count when the page loads
-document.addEventListener('DOMContentLoaded', async () => {
-    await fetchWords();  // Fetch and display the words
-    await fetchWordCount();  // Fetch and display the total word count
-});
+            await fetchWords();  // Fetch and display the updated list of words
+            await fetchWordCount();  // Fetch and display the updated word count
+        } catch (error) {
+            console.error("Error adding word:", error);
+        }
+    });
 
-const searchInput = document.getElementById('searchWord');
-if (searchInput) {
+    //Search words JS
+    const searchInput = document.getElementById('searchWord');
     searchInput.addEventListener('input', function() {
         const searchValue = this.value.toLowerCase();
         const wordItems = document.querySelectorAll('.word-item');
@@ -408,4 +411,5 @@ if (searchInput) {
         const event = new Event('input'); 
         searchInput.dispatchEvent(event);
     });
+
 }
