@@ -62,7 +62,7 @@ if (document.getElementsByClassName("whole-content-container-practice")[0])
 let correctWordId = null;
 let randomWord = "";
 
-async function fetchRandomWord() {
+async function fetchRandomEnglishWord() {
     try {
         randomWord = await invoke('get_random_word');  // Call the Tauri command to get words
         correctWordId = randomWord.id;
@@ -71,6 +71,17 @@ async function fetchRandomWord() {
         console.error('Error fetching words:', error);
     }
 }
+
+async function fetchRandomGermanWord() {
+    try {
+        randomWord = await invoke('get_random_word');  // Call the Tauri command to get words
+        correctWordId = randomWord.id;
+        displayRandomWord(randomWord.german_word);  // Display the fetched words
+    } catch (error) {
+        console.error('Error fetching words:', error);
+    }
+}
+
 
 function displayRandomWord(randomWord){
     document.getElementsByClassName("word-to-guess")[0].innerHTML = randomWord;
@@ -109,7 +120,7 @@ document.getElementsByClassName('word-practice-form')[0].addEventListener('submi
         
 
         // Optionally fetch and display a new word after each guess
-        await fetchRandomWord();
+        await fetchRandomEnglishWord();
     } catch (error) {
         console.error("Error submitting guess:", error);
     }
@@ -170,10 +181,10 @@ async function submitGuess(guess, correctWordId) {
     return response;
 }
 
-//Run the fetchRandomWord function
+//Run the fetchRandomEnglishWord function
 document.addEventListener('DOMContentLoaded', async () => {
     document.getElementsByClassName("users-guess")[0].focus(); //Auto click on the input field
-    await fetchRandomWord();
+    await fetchRandomEnglishWord();
 });
 }
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
