@@ -55,12 +55,24 @@ async function fetchWordCount() {
     }
 }
 
+//Saves whichever practice type user selects to session storage;
+document.querySelectorAll('.grid-container-practice a').forEach(anchor => {
+    anchor.addEventListener('click', function(event) {
+      // Get the ID of the clicked link
+      const selectedOption = this.id;
+      
+      //Store the selected option in session
+      sessionStorage.setItem("practice-type", selectedOption);
+    });
+  });
+
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
 if (document.getElementsByClassName("whole-content-container-practice")[0])
 {
 let correctWordId = null;
 let randomWord = "";
+let practiceType = sessionStorage.getItem("practice-type");
 
 async function fetchRandomEnglishWord() {
     try {
@@ -82,10 +94,10 @@ async function fetchRandomGermanWord() {
     }
 }
 
-
 function displayRandomWord(randomWord){
     document.getElementsByClassName("word-to-guess")[0].innerHTML = randomWord;
-    guessResponseFadeout()
+    guessResponseFadeout();
+    console.log(practiceType);
 }
 
 // Handle form submission and check the user's guess
@@ -111,7 +123,12 @@ document.getElementsByClassName('word-practice-form')[0].addEventListener('submi
             guessResponseFadeout("#08ff299d", "center"); //On correct guess green colour + center text
         } else {
             // Show incorrect feedback
-            responseElement.innerHTML = `Guess: ${guess}<br>Answer: ${randomWord.german_word}`;
+            if(practiceType === "practice-english") {
+                responseElement.innerHTML = `Guess: ${guess}<br>Answer: ${randomWord.german_word}`;
+                }
+                else{
+                    responseElement.innerHTML = `Guess: ${guess}<br>Answer: ${randomWord.english_word}`;
+                }
             console.log(randomWord.german_word);
 
             borderColourChange("#88111141");
@@ -120,7 +137,13 @@ document.getElementsByClassName('word-practice-form')[0].addEventListener('submi
         
 
         // Optionally fetch and display a new word after each guess
+        if(practiceType === "practice-english") {
         await fetchRandomEnglishWord();
+        }
+        else{
+            fetchRandomGermanWord();
+        }
+
     } catch (error) {
         console.error("Error submitting guess:", error);
     }
@@ -176,15 +199,22 @@ function borderColourChange(hexColour) {
 }
 
 // Function to submit guess to the backend
-async function submitGuess(guess, correctWordId) {
-    const response = await invoke("process_guess", { guess, correctWordId });
+async function submitGuess(guess, correctWordId, practiceType) {
+    practiceType = sessionStorage.getItem("practice-type");
+    const response = await invoke("process_guess", { guess, correctWordId, practiceType });
     return response;
 }
 
 //Run the fetchRandomEnglishWord function
 document.addEventListener('DOMContentLoaded', async () => {
     document.getElementsByClassName("users-guess")[0].focus(); //Auto click on the input field
-    await fetchRandomEnglishWord();
+    
+    if(practiceType === "practice-english") {
+        await fetchRandomEnglishWord();
+        }
+        else{
+            fetchRandomGermanWord();
+        }
 });
 }
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */

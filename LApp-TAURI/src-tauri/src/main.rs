@@ -172,7 +172,7 @@ async fn get_next_word(state: tauri::State<'_, AppState>, recent_words: Vec<i32>
 }
 
 #[tauri::command] //Check if user guess is correct
-async fn check_guess(state: tauri::State<'_, AppState>, guess: String, correct_word_id: i32) -> Result<bool, String> {
+async fn check_guess(state: tauri::State<'_, AppState>, guess: String, correct_word_id: i32, practice_type: String) -> Result<bool, String> {
     let db = &state.db;
 
     // Get the correct word from the database
@@ -182,11 +182,23 @@ async fn check_guess(state: tauri::State<'_, AppState>, guess: String, correct_w
         .await
         .map_err(|e| format!("Failed to fetch correct word: {}", e))?;
 
-    // Compare guess with the correct German word
-    if guess.trim().to_lowercase() == word.german_word.to_lowercase() {
-        Ok(true)  // Guess is correct
-    } else {
-        Ok(false)  // Guess is incorrect
+    if practice_type == "practice-english"
+    {
+        // Compare guess with the correct German word
+        if guess.trim().to_lowercase() == word.german_word.to_lowercase() {
+            Ok(true)  // Guess is correct
+        } else {
+            Ok(false)  // Guess is incorrect
+        }
+    }
+    else
+    {
+        // Compare guess with the correct German word
+        if guess.trim().to_lowercase() == word.english_word.to_lowercase() {
+            Ok(true)  // Guess is correct
+        } else {
+            Ok(false)  // Guess is incorrect
+        }
     }
 }
 
@@ -194,9 +206,10 @@ async fn check_guess(state: tauri::State<'_, AppState>, guess: String, correct_w
 async fn process_guess(
     state: tauri::State<'_, AppState>,
     guess: String,
-    correct_word_id: i32
+    correct_word_id: i32,
+    practice_type: String  //It does nothing here but it it's not here the app will creash since check guess is sending 4 arguments
 ) -> Result<String, String> {
-    let is_correct = check_guess(state.clone(), guess, correct_word_id).await?;
+    let is_correct = check_guess(state.clone(), guess, correct_word_id, practice_type).await?;
 
     if is_correct {
         Ok("Correct!".to_string())
