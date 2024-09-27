@@ -193,8 +193,14 @@ async fn check_guess(state: tauri::State<'_, AppState>, guess: String, correct_w
     }
     else
     {
-        // Compare guess with the correct German word
-        if guess.trim().to_lowercase() == word.english_word.to_lowercase() {
+        // Handle multiple correct answers
+        let correct_answers: Vec<String> = word.english_word.split('/')
+        .map(|part| part.trim().to_lowercase())
+        .collect();
+
+
+        // Check if the user's guess matches any of the correct answers
+        if correct_answers.contains(&guess.trim().to_lowercase()) {
             Ok(true)  // Guess is correct
         } else {
             Ok(false)  // Guess is incorrect

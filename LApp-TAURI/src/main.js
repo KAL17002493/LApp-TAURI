@@ -441,5 +441,4 @@ if (document.getElementsByClassName("index-container")[0])
         const event = new Event('input'); 
         searchInput.dispatchEvent(event);
     });
-
 }
