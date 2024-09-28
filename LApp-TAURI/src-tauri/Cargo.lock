@@ -1629,6 +1629,7 @@ name = "lapp-tauri"
 version = "0.1.0"
 dependencies = [
  "futures",
+ "regex",
  "serde",
  "serde_json",
  "sqlx",
