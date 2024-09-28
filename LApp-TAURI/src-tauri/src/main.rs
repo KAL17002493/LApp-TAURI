@@ -156,6 +156,23 @@ async fn get_random_word(state: tauri::State<'_, AppState>) -> Result<Word, Stri
     Ok(word)
 }
 
+#[tauri::command] //Get 1 random word from DB added in last 6 days
+async fn get_random_new_word(state: tauri::State<'_, AppState>) -> Result<Word, String> {
+    let db = &state.db;
+
+    let word: Word = sqlx::query_as::<_, Word>(
+        "SELECT * FROM word 
+         WHERE date_added >= DATE('now', '-6 days')
+         ORDER BY RANDOM() 
+         LIMIT 1"
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|e| format!("Failed to fetch random word: {}", e))?;
+    
+    Ok(word)
+}
+
 #[tauri::command] //Prevent word repetition
 async fn get_next_word(state: tauri::State<'_, AppState>, recent_words: Vec<i32>) -> Result<Word, String> {
     let db = &state.db;
@@ -179,29 +196,29 @@ async fn check_guess(state: tauri::State<'_, AppState>, guess: String, correct_w
 
     // Function to remove parentheses and their content
     fn remove_parentheses(text: &str) -> String {
-        let re = regex::Regex::new(r"\s*\(.*?\)").unwrap(); // Match parentheses and the content within
-        re.replace_all(text, "").to_string() // Remove the matched content
+        let re = regex::Regex::new(r"\s*\(.*?\)").unwrap(); //Find brackets
+        re.replace_all(text, "").to_string() //Remove brackets if found
     }
 
-    // Get the correct word from the database
+    //Get the correct word from the database to check agains using it's id
     let word: Word = sqlx::query_as::<_, Word>("SELECT * FROM word WHERE id = ?")
         .bind(correct_word_id)
         .fetch_one(db)
         .await
         .map_err(|e| format!("Failed to fetch correct word: {}", e))?;
 
-    // Clean the user's guess by removing content inside parentheses and trimming
+    //Clean the user's guess by removing content inside parentheses and trimming
     let cleaned_guess = remove_parentheses(&guess).trim().to_lowercase();
 
     if practice_type == "practice-english" {
-        // Clean the German word before comparing
+        //Clean the German word before comparing
         let cleaned_german_word = remove_parentheses(&word.german_word).trim().to_lowercase();
 
-        // Compare the cleaned guess with the cleaned German word
+        //Compare the cleaned guess with the cleaned German word
         if cleaned_guess == cleaned_german_word {
-            Ok(true)  // Guess is correct
+            Ok(true)  //Guess is correct
         } else {
-            Ok(false)  // Guess is incorrect
+            Ok(false)  //Guess is incorrect
         }
     } else {
         // Handle multiple correct answers for English to German
@@ -248,7 +265,8 @@ async fn main() {
             get_random_word,
             get_next_word,
             check_guess,
-            process_guess
+            process_guess,
+            get_random_new_word
         ])
         .build(tauri::generate_context!())
         .expect("error while building Tauri application");

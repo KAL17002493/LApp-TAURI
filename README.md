@@ -5,4 +5,5 @@
   <li>On practice page if guess field is empy DO NOT load a new word unless a guess is made</li>
   <li>When user deletes a word clear the search word input field</li>
   <li>Finally figure out where to leave the navigation buttons on permanently</li>
+  <li>Add code to prevent saving duplicate words</li>
 </ul>

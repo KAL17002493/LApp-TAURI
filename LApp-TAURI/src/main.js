@@ -68,154 +68,152 @@ document.querySelectorAll('.grid-container-practice a').forEach(anchor => {
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
-if (document.getElementsByClassName("whole-content-container-practice")[0])
-{
-let correctWordId = null;
-let randomWord = "";
-let practiceType = sessionStorage.getItem("practice-type");
+if (document.getElementsByClassName("whole-content-container-practice")[0]) {
+    let correctWordId = null;
+    let randomWord = "";
+    let practiceType = sessionStorage.getItem("practice-type");
 
-async function fetchRandomEnglishWord() {
-    try {
-        randomWord = await invoke('get_random_word');  // Call the Tauri command to get words
-        correctWordId = randomWord.id;
-        displayRandomWord(randomWord.english_word);  // Display the fetched words
-    } catch (error) {
-        console.error('Error fetching words:', error);
-    }
-}
+    // General function to fetch a word based on practice type
+    async function fetchWord() {
+        try {
+            const randomLang = Math.random() > 0.5 ? "english_word" : "german_word";
 
-async function fetchRandomGermanWord() {
-    try {
-        randomWord = await invoke('get_random_word');  // Call the Tauri command to get words
-        correctWordId = randomWord.id;
-        displayRandomWord(randomWord.german_word);  // Display the fetched words
-    } catch (error) {
-        console.error('Error fetching words:', error);
-    }
-}
-
-function displayRandomWord(randomWord){
-    document.getElementsByClassName("word-to-guess")[0].innerHTML = randomWord;
-    guessResponseFadeout();
-    console.log(practiceType);
-}
-
-// Handle form submission and check the user's guess
-document.getElementsByClassName('word-practice-form')[0].addEventListener('submit', async function(event) {
-    event.preventDefault();  // Prevent form submission and page reload
-    
-    // Get the user's guess from the input field
-    const guess = document.getElementsByClassName('users-guess')[0].value.trim();
-
-    // Call the submitGuess function with the user's guess and the correct word ID
-    try {
-        const response = await submitGuess(guess, correctWordId);  // Send guess to backend
-        document.getElementsByClassName('users-guess')[0].value = "";  // Clear input field
-
-        //Reset opacity of word-guess-response before showing if guess is correct or not
-        const responseElement = document.getElementsByClassName('word-guess-response')[0];
-        responseElement.style.opacity = '1';
-
-        if (response === "Correct!") {
-            // Show success feedback
-            responseElement.innerHTML = "Correct!<br>Well done!";
-            borderColourChange("#08ff291f");
-            guessResponseFadeout("#08ff299d", "center"); //On correct guess green colour + center text
-        } else {
-            // Show incorrect feedback
-            if(practiceType === "practice-english") {
-                responseElement.innerHTML = `Guess: ${guess}<br>Answer: ${randomWord.german_word}`;
-                }
-                else{
-                    responseElement.innerHTML = `Guess: ${guess}<br>Answer: ${randomWord.english_word}`;
-                }
-            console.log(randomWord.german_word);
-
-            borderColourChange("#88111141");
-            guessResponseFadeout("#d63434ad", "left"); //Incorrect Guess red colour and text is on left
+            switch (practiceType) {
+                case "practice-english":
+                    randomWord = await invoke('get_random_word');
+                    correctWordId = randomWord.id;
+                    displayRandomWord(randomWord.english_word);
+                    break;
+                case "practice-german":
+                    randomWord = await invoke('get_random_word');
+                    correctWordId = randomWord.id;
+                    displayRandomWord(randomWord.german_word);
+                    break;
+                case "practice-mix":
+                    randomWord = await invoke('get_random_word');
+                    correctWordId = randomWord.id;
+                    displayRandomWord(randomWord[randomLang]);
+                    break;
+                case "practice-new":
+                    randomWord = await invoke('get_random_new_word');
+                    correctWordId = randomWord.id;
+                    displayRandomWord(randomWord[randomLang]);
+                    break;
+                // Add other practice types here if necessary
+                default:
+                    console.error("Unknown practice type");
+            }
+        } catch (error) {
+            console.error('Error fetching word:', error);
         }
+    }
+
+    //Display fetched word
+    function displayRandomWord(randomWord){
+        document.getElementsByClassName("word-to-guess")[0].innerHTML = randomWord;
+        guessResponseFadeout();
+        console.log(`Practice type: ${practiceType}, Word displayed: ${randomWord}`);
+    }
+
+    // Handle form submission and check the user's guess
+    document.getElementsByClassName('word-practice-form')[0].addEventListener('submit', async function(event) {
+        event.preventDefault();  // Prevent form submission and page reload
         
+        // Get the user's guess from the input field
+        const guess = document.getElementsByClassName('users-guess')[0].value.trim();
 
-        // Optionally fetch and display a new word after each guess
-        if(practiceType === "practice-english") {
-        await fetchRandomEnglishWord();
-        }
-        else{
-            fetchRandomGermanWord();
-        }
+        // Call the submitGuess function with the user's guess and the correct word ID
+        try {
+            const response = await submitGuess(guess, correctWordId);  // Send guess to backend
+            document.getElementsByClassName('users-guess')[0].value = "";  // Clear input field
 
-    } catch (error) {
-        console.error("Error submitting guess:", error);
+            //Reset opacity of word-guess-response before showing if guess is correct or not
+            const responseElement = document.getElementsByClassName('word-guess-response')[0];
+            responseElement.style.opacity = '1';
+
+            if (response === "Correct!") {
+                // Show success feedback
+                responseElement.innerHTML = "Correct!<br>Well done!";
+                borderColourChange("#08ff291f");
+                guessResponseFadeout("#08ff299d", "center"); //On correct guess green colour + center text
+            } else {
+                let answer = practiceType === "practice-english" ? randomWord.german_word : randomWord.english_word;
+                responseElement.innerHTML = `Guess: ${guess}<br>Answer: ${answer}`;
+
+                borderColourChange("#88111141");
+                guessResponseFadeout("#d63434ad", "left"); //Incorrect Guess red colour and text is on left
+            }
+
+            await fetchWord(); //Fetch next word
+
+        } catch (error) {
+            console.error("Error submitting guess:", error);
+        }
+    });
+
+    //Function to submit guess to the backend
+    async function submitGuess(guess, correctWordId) {
+        const practiceType = sessionStorage.getItem("practice-type");
+        const response = await invoke("process_guess", { guess, correctWordId, practiceType });
+        return response;
     }
-});
 
-function guessResponseFadeout(textColor, textPos) { 
-    // Hides guess response after a guess has been made
-    const element = document.getElementsByClassName("word-guess-response")[0];
+    function guessResponseFadeout(textColor, textPos) { 
+        // Hides guess response after a guess has been made
+        const element = document.getElementsByClassName("word-guess-response")[0];
 
-    // Clear any previous timeout to prevent multiple timeouts from executing
-    clearTimeout(element.timeoutId);
-
-    // Set a new timeout to fade out the response after a few seconds
-    element.timeoutId = setTimeout(() => {
-        element.style.opacity = '0';  // Change opacity to 0
-    }, 2000);
-
-    // Set initial styles
-    element.style.color = textColor; // Set initial text color
-    element.style.textAlign = textPos; // Set initial text alignment
-    element.style.opacity = '1'; // Ensure it's visible when the function is called
-
-    // Add mouse over event listener 
-    element.addEventListener('mouseover', function() {
-        // Clear timeout when hovering over the element
+        // Clear any previous timeout to prevent multiple timeouts from executing
         clearTimeout(element.timeoutId);
-        element.style.opacity = "1";  // Ensure it stays visible
-    });
 
-    element.addEventListener('mouseout', function() {
-        // Restart the fade-out countdown when the mouse leaves the element
-        clearTimeout(element.timeoutId);  // Clear any active timeouts
+        // Set a new timeout to fade out the response after a few seconds
         element.timeoutId = setTimeout(() => {
-            element.style.opacity = '0';
-        }, 500);
+            element.style.opacity = '0';  // Change opacity to 0
+        }, 2000);
+
+        // Set initial styles
+        element.style.color = textColor; // Set initial text color
+        element.style.textAlign = textPos; // Set initial text alignment
+        element.style.opacity = '1'; // Ensure it's visible when the function is called
+
+        // Add mouse over event listener 
+        element.addEventListener('mouseover', function() {
+            // Clear timeout when hovering over the element
+            clearTimeout(element.timeoutId);
+            element.style.opacity = "1";  // Ensure it stays visible
+        });
+
+        element.addEventListener('mouseout', function() {
+            // Restart the fade-out countdown when the mouse leaves the element
+            clearTimeout(element.timeoutId);  // Clear any active timeouts
+            element.timeoutId = setTimeout(() => {
+                element.style.opacity = '0';
+            }, 500);
+        });
+    }
+
+    function borderColourChange(hexColour) {
+        const element = document.getElementsByClassName("whole-content-container-practice")[0];
+
+        // Apply an elliptical radial gradient that fades quickly from the edges inward
+        element.style.background = `radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 80%, ${hexColour} 100%)`;
+
+        // Clear any previous timeout to prevent multiple timeouts from executing
+        clearTimeout(element.timeoutId);
+
+        // Set a new timeout to start fading the background after some seconds
+        element.timeoutId = setTimeout(() => {
+            // Set the background to a fully transparent state to trigger the CSS transition
+            element.style.background = 'rgba(0, 0, 0, 0)'; 
+        }, 2000);
+    }
+
+    //Run the fetchRandomEnglishWord function
+    document.addEventListener('DOMContentLoaded', async () => {
+        document.getElementsByClassName("users-guess")[0].focus(); //Auto click on the input field
+
+        // Fetch the first word based on practice type
+        await fetchWord();
     });
-}
-
-function borderColourChange(hexColour) {
-    const element = document.getElementsByClassName("whole-content-container-practice")[0];
-
-    // Apply an elliptical radial gradient that fades quickly from the edges inward
-    element.style.background = `radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 80%, ${hexColour} 100%)`;
-
-    // Clear any previous timeout to prevent multiple timeouts from executing
-    clearTimeout(element.timeoutId);
-
-    // Set a new timeout to start fading the background after some seconds
-    element.timeoutId = setTimeout(() => {
-        // Set the background to a fully transparent state to trigger the CSS transition
-        element.style.background = 'rgba(0, 0, 0, 0)'; 
-    }, 2000);
-}
-
-// Function to submit guess to the backend
-async function submitGuess(guess, correctWordId, practiceType) {
-    practiceType = sessionStorage.getItem("practice-type");
-    const response = await invoke("process_guess", { guess, correctWordId, practiceType });
-    return response;
-}
-
-//Run the fetchRandomEnglishWord function
-document.addEventListener('DOMContentLoaded', async () => {
-    document.getElementsByClassName("users-guess")[0].focus(); //Auto click on the input field
-    
-    if(practiceType === "practice-english") {
-        await fetchRandomEnglishWord();
-        }
-        else{
-            fetchRandomGermanWord();
-        }
-});
 }
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
