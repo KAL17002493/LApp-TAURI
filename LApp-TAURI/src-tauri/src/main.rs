@@ -190,79 +190,62 @@ async fn get_next_word(state: tauri::State<'_, AppState>, recent_words: Vec<i32>
     Ok(word)
 }
 
-#[tauri::command] //Check if user guess is correct
+#[tauri::command] // Check if user guess is correct
 async fn check_guess(state: tauri::State<'_, AppState>, guess: String, correct_word_id: i32, practice_type: String, lan_displayed: String) -> Result<bool, String> {
     let db = &state.db;
 
-    //Function to remove brackets and their content (for english words)
-    fn remove_parentheses(text: &str) -> String {
-        let re = regex::Regex::new(r"\s*\(.*?\)").unwrap(); //Find brackets
-        re.replace_all(text, "").to_string() //Remove brackets if found
-    }
-
-    //Get the correct word from the database to check agains using it's id
+    //Get the word from the database using its ID
     let word: Word = sqlx::query_as::<_, Word>("SELECT * FROM word WHERE id = ?")
         .bind(correct_word_id)
         .fetch_one(db)
         .await
         .map_err(|e| format!("Failed to fetch correct word: {}", e))?;
 
-    //Clean the user's guess by removing content inside parentheses and trimming
-    let cleaned_guess = remove_parentheses(&guess).trim().to_lowercase();
-
-    if practice_type == "practice-english" {
-        //Clean the German word before comparing
-        let cleaned_german_word = remove_parentheses(&word.german_word).trim().to_lowercase();
-
-        //Compare the cleaned guess with the cleaned German word
-        if cleaned_guess == cleaned_german_word {
-            Ok(true)
-        } else {
-            Ok(false)
-        }
+    //Remove brackets and their content (for English words)
+    fn remove_parentheses(text: &str) -> String {
+        let re = regex::Regex::new(r"\s*\(.*?\)").unwrap(); //Find brackets
+        re.replace_all(text, "").to_string() //Remove brackets if found
     }
-    else if practice_type == "practice-german"{
-        //Handle multiple correct answers for English to German
-        let correct_answers: Vec<String> = word.english_word.split('/')
-            .map(|part| remove_parentheses(part).trim().to_lowercase()) // Clean each answer
-            .collect();
 
-        //Check if the cleaned guess matches any of the cleaned correct answers
-        if correct_answers.contains(&cleaned_guess) {
-            Ok(true)
-        } else {
-            Ok(false)
-        }
+    //Remote white spaces from start and end + conver text to lowercase
+    fn clean_word(word: &str) -> String {
+        remove_parentheses(word).trim().to_lowercase() 
     }
-    else
-    {
-        if lan_displayed == "german"{
-            //Handle multiple correct answers for English to German
-            let correct_answers: Vec<String> = word.english_word.split('/')
-                .map(|part| remove_parentheses(part).trim().to_lowercase()) // Clean each answer
-                .collect();
 
-            //Check if the cleaned guess matches any of the cleaned correct answers
-            if correct_answers.contains(&cleaned_guess) {
-                Ok(true)
+    //Call clean_word function
+    let cleaned_guess = clean_word(&guess);
+
+    // Function to handle English-to-German comparison
+    fn check_multiple_answers(answers: &str, guess: &str) -> bool {
+        answers.split('/')
+            .map(|part| clean_word(part))
+            .any(|cleaned_answer| cleaned_answer == guess)
+    }
+
+    // Depending on the practice type or language displayed, check the answer
+    match practice_type.as_str() {
+        // Handle English to German practice
+        "practice-english" => {
+            let cleaned_german_word = clean_word(&word.german_word);
+            Ok(cleaned_guess == cleaned_german_word)
+        }
+        // Handle German to English practice
+        "practice-german" => Ok(check_multiple_answers(&word.english_word, &cleaned_guess)),
+        
+        // Handle mixed, new, and "terribleAt" where either German or English can be displayed
+        "practice-mix" | "practice-new" | "practice-suckAt" => {
+            if lan_displayed == "german" {
+                // If German is displayed, compare with English guesses
+                Ok(check_multiple_answers(&word.english_word, &cleaned_guess))
             } else {
-                Ok(false)
+                // If English is displayed, compare with German guesses
+                let cleaned_german_word = clean_word(&word.german_word);
+                Ok(cleaned_guess == cleaned_german_word)
             }
         }
-        else {
-            //Clean the German word before comparing
-            let cleaned_german_word = remove_parentheses(&word.german_word).trim().to_lowercase();
-
-            //Compare the cleaned guess with the cleaned German word
-            if cleaned_guess == cleaned_german_word {
-                Ok(true)
-            } else {
-                Ok(false)
-            }
-        }
+        _ => Err("Invalid practice type.".to_string()),
     }
 }
-
 
 #[tauri::command] //Sends correct or incorrect guess to frontend
 async fn process_guess(
