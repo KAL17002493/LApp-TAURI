@@ -220,7 +220,8 @@ async fn check_guess(state: tauri::State<'_, AppState>, guess: String, correct_w
         } else {
             Ok(false)  //Guess is incorrect
         }
-    } else {
+    }
+    else if practice_type == "practice-german"{
         // Handle multiple correct answers for English to German
         let correct_answers: Vec<String> = word.english_word.split('/')
             .map(|part| remove_parentheses(part).trim().to_lowercase()) // Clean each answer
@@ -232,6 +233,9 @@ async fn check_guess(state: tauri::State<'_, AppState>, guess: String, correct_w
         } else {
             Ok(false)  // Guess is incorrect
         }
+    }
+    else{
+        Ok(false)
     }
 }
 

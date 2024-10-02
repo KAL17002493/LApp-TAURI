@@ -214,6 +214,11 @@ if (document.getElementsByClassName("whole-content-container-practice")[0]) {
         // Fetch the first word based on practice type
         await fetchWord();
     });
+
+    //Removes practice-type from session storage when "Finish" button clicker
+    document.getElementById("practice-finish").addEventListener("click", function(event){
+        sessionStorage.removeItem("practice-type");
+    });
 }
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
