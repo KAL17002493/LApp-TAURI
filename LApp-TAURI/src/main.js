@@ -100,11 +100,16 @@ if (document.getElementsByClassName("whole-content-container-practice")[0]) {
                     console.log(lanDisplayed);
                     break;
                 case "practice-new":
-                    randomWord = await invoke('get_random_new_word');
-                    correctWordId = randomWord.id;
-                    displayRandomWord(randomWord[randomLang]);
-                    lanDisplayed = randomLang === "english_word" ? "english" : "german";
-                    console.log(lanDisplayed);
+                    try { //Try to fetch a new practice word
+                        const randomWord = await invoke('get_random_new_word');
+                        correctWordId = randomWord.id;
+                        displayRandomWord(randomWord[randomLang]);
+                        lanDisplayed = randomLang === "english_word" ? "english" : "german";
+                        console.log(lanDisplayed);
+                    } catch (error) { //If no word is returned inform user
+                        const errorMessage = "No new words have been added in last 6 days";
+                        displayRandomWord(errorMessage);
+                    }
                     break;
                 // Add other practice types here if necessary
                 default:
@@ -117,9 +122,20 @@ if (document.getElementsByClassName("whole-content-container-practice")[0]) {
 
     //Display fetched word
     function displayRandomWord(randomWord){
+        const hideElement = (element) => {
+            if (element) {
+                element.hidden = true; // Hide the element
+            }
+        };
+        
+        if (randomWord === "No new words have been added in last 6 days") {
+            hideElement(document.getElementsByClassName("users-guess")[0]);
+            hideElement(document.getElementsByClassName("word-guess-response")[0]);
+        }
+        
         document.getElementsByClassName("word-to-guess")[0].innerHTML = randomWord;
         guessResponseFadeout();
-        console.log(`Practice type: ${practiceType}, Word displayed: ${randomWord}`);
+        //console.log(`Practice type: ${practiceType}, Word displayed: ${randomWord}`);
     }
 
     // Handle form submission and check the user's guess
