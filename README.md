@@ -6,4 +6,5 @@
   <li>When user deletes a word clear the search word input field</li>
   <li>Finally figure out where to leave the navigation buttons on permanently</li>
   <li>Add code to prevent saving duplicate words</li>
+  <li>English(OK), German(OK) : Mix(Need to tell backend if answer should be checked agains engish or german/Front end is finished), New(Need to tell backend if answer should be checked agains engish or german/Front end is finished), Terrible-At(Not implemented)</li>
 </ul>

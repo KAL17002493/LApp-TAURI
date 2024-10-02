@@ -191,10 +191,10 @@ async fn get_next_word(state: tauri::State<'_, AppState>, recent_words: Vec<i32>
 }
 
 #[tauri::command] //Check if user guess is correct
-async fn check_guess(state: tauri::State<'_, AppState>, guess: String, correct_word_id: i32, practice_type: String) -> Result<bool, String> {
+async fn check_guess(state: tauri::State<'_, AppState>, guess: String, correct_word_id: i32, practice_type: String, lan_displayed: String) -> Result<bool, String> {
     let db = &state.db;
 
-    // Function to remove parentheses and their content
+    //Function to remove brackets and their content (for english words)
     fn remove_parentheses(text: &str) -> String {
         let re = regex::Regex::new(r"\s*\(.*?\)").unwrap(); //Find brackets
         re.replace_all(text, "").to_string() //Remove brackets if found
@@ -216,26 +216,50 @@ async fn check_guess(state: tauri::State<'_, AppState>, guess: String, correct_w
 
         //Compare the cleaned guess with the cleaned German word
         if cleaned_guess == cleaned_german_word {
-            Ok(true)  //Guess is correct
+            Ok(true)
         } else {
-            Ok(false)  //Guess is incorrect
+            Ok(false)
         }
     }
     else if practice_type == "practice-german"{
-        // Handle multiple correct answers for English to German
+        //Handle multiple correct answers for English to German
         let correct_answers: Vec<String> = word.english_word.split('/')
             .map(|part| remove_parentheses(part).trim().to_lowercase()) // Clean each answer
             .collect();
 
-        // Check if the cleaned guess matches any of the cleaned correct answers
+        //Check if the cleaned guess matches any of the cleaned correct answers
         if correct_answers.contains(&cleaned_guess) {
-            Ok(true)  // Guess is correct
+            Ok(true)
         } else {
-            Ok(false)  // Guess is incorrect
+            Ok(false)
         }
     }
-    else{
-        Ok(false)
+    else
+    {
+        if lan_displayed == "german"{
+            //Handle multiple correct answers for English to German
+            let correct_answers: Vec<String> = word.english_word.split('/')
+                .map(|part| remove_parentheses(part).trim().to_lowercase()) // Clean each answer
+                .collect();
+
+            //Check if the cleaned guess matches any of the cleaned correct answers
+            if correct_answers.contains(&cleaned_guess) {
+                Ok(true)
+            } else {
+                Ok(false)
+            }
+        }
+        else {
+            //Clean the German word before comparing
+            let cleaned_german_word = remove_parentheses(&word.german_word).trim().to_lowercase();
+
+            //Compare the cleaned guess with the cleaned German word
+            if cleaned_guess == cleaned_german_word {
+                Ok(true)
+            } else {
+                Ok(false)
+            }
+        }
     }
 }
 
@@ -245,9 +269,10 @@ async fn process_guess(
     state: tauri::State<'_, AppState>,
     guess: String,
     correct_word_id: i32,
-    practice_type: String  //It does nothing here but it it's not here the app will creash since check guess is sending 4 arguments
+    practice_type: String,  //It does nothing here but it it's not here the app will creash since check guess is sending 4 arguments
+    lan_displayed: String
 ) -> Result<String, String> {
-    let is_correct = check_guess(state.clone(), guess, correct_word_id, practice_type).await?;
+    let is_correct = check_guess(state.clone(), guess, correct_word_id, practice_type, lan_displayed).await?;
 
     if is_correct {
         Ok("Correct!".to_string())

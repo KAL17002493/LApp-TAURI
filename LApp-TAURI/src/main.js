@@ -72,6 +72,7 @@ if (document.getElementsByClassName("whole-content-container-practice")[0]) {
     let correctWordId = null;
     let randomWord = "";
     let practiceType = sessionStorage.getItem("practice-type");
+    let lanDisplayed = "lanDisplayed is empty";
 
     // General function to fetch a word based on practice type
     async function fetchWord() {
@@ -83,21 +84,27 @@ if (document.getElementsByClassName("whole-content-container-practice")[0]) {
                     randomWord = await invoke('get_random_word');
                     correctWordId = randomWord.id;
                     displayRandomWord(randomWord.english_word);
+                    lanDisplayed = "english";
                     break;
                 case "practice-german":
                     randomWord = await invoke('get_random_word');
                     correctWordId = randomWord.id;
                     displayRandomWord(randomWord.german_word);
+                    lanDisplayed = "german";
                     break;
                 case "practice-mix":
                     randomWord = await invoke('get_random_word');
                     correctWordId = randomWord.id;
                     displayRandomWord(randomWord[randomLang]);
+                    lanDisplayed = randomLang === "english_word" ? "english" : "german";
+                    console.log(lanDisplayed);
                     break;
                 case "practice-new":
                     randomWord = await invoke('get_random_new_word');
                     correctWordId = randomWord.id;
                     displayRandomWord(randomWord[randomLang]);
+                    lanDisplayed = randomLang === "english_word" ? "english" : "german";
+                    console.log(lanDisplayed);
                     break;
                 // Add other practice types here if necessary
                 default:
@@ -137,7 +144,11 @@ if (document.getElementsByClassName("whole-content-container-practice")[0]) {
                 borderColourChange("#08ff291f");
                 guessResponseFadeout("#08ff299d", "center"); //On correct guess green colour + center text
             } else {
-                let answer = practiceType === "practice-english" ? randomWord.german_word : randomWord.english_word;
+                
+                let answer = lanDisplayed === "english" ? randomWord.german_word : //assigns correct langauge to the wrong guess error message
+                             lanDisplayed === "german" ? randomWord.english_word :
+                             "Answer field not going as planned";
+                             
                 responseElement.innerHTML = `Guess: ${guess}<br>Answer: ${answer}`;
 
                 borderColourChange("#88111141");
@@ -154,7 +165,7 @@ if (document.getElementsByClassName("whole-content-container-practice")[0]) {
     //Function to submit guess to the backend
     async function submitGuess(guess, correctWordId) {
         const practiceType = sessionStorage.getItem("practice-type");
-        const response = await invoke("process_guess", { guess, correctWordId, practiceType });
+        const response = await invoke("process_guess", { guess, correctWordId, practiceType, lanDisplayed });
         return response;
     }
 
