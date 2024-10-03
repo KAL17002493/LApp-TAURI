@@ -7,4 +7,5 @@
   <li>Finally figure out where to leave the navigation buttons on permanently</li>
   <li>Add code to prevent saving duplicate words</li>
   <li>English(OK), German(OK) : Mix(Need to tell backend if answer should be checked agains engish or german/Front end is finished), New(Need to tell backend if answer should be checked agains engish or german/Front end is finished), Terrible-At(Not implemented)</li>
+  <li>Make sure that the word duplication feature actually works, testing it with well over 300 words is challanging which is the number of words in db at the time of adding this message</li>
 </ul>
