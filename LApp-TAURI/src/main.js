@@ -132,7 +132,7 @@ if (document.getElementsByClassName("whole-content-container-practice")[0]) {
             hideElement(document.getElementsByClassName("users-guess")[0]);
             hideElement(document.getElementsByClassName("word-guess-response")[0]);
         }
-        
+
         document.getElementsByClassName("word-to-guess")[0].innerHTML = randomWord;
         guessResponseFadeout();
         //console.log(`Practice type: ${practiceType}, Word displayed: ${randomWord}`);

@@ -2,16 +2,47 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use serde::{Deserialize, Serialize}; // For serializing and deserializing JSON data
-//use sqlx::sqlite::SqlitePoolOptions;
-//use sqlx::{Pool, Sqlite}; // For database handling
-//use futures::TryStreamExt; // For streaming query results
 use tauri::Manager; // Import Manager trait for manage function
+
+use std::collections::VecDeque;
+use tokio::sync::Mutex;
 
 //DB connection + setup if needed
 type Db = sqlx::Pool<sqlx::Sqlite>;
 
 struct AppState {
     db: Db,
+    recent_words_displayed: Mutex<VecDeque<Word>>, // Recent words
+}
+
+#[tokio::main]
+async fn main() {
+    let app = tauri::Builder::default()
+        .setup(|app| {
+            // Setup database and recent words list
+            let db = futures::executor::block_on(setup_db(app));
+            app.manage(AppState {
+                db,
+                recent_words_displayed: Mutex::new(VecDeque::new()), // Empty VecDeque initialized
+            });
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![
+            add_word,
+            get_words,
+            db_word_count,
+            delete_word,
+            get_word_by_id,
+            update_word,
+            get_random_word,
+            check_guess,
+            process_guess,
+            get_random_new_word
+        ])
+        .build(tauri::generate_context!())
+        .expect("error while building Tauri application");
+
+    app.run(|_, _| {});
 }
 
 async fn setup_db(app: &tauri::App) -> Db {
@@ -20,10 +51,9 @@ async fn setup_db(app: &tauri::App) -> Db {
         .app_data_dir()
         .expect("could not get data_dir");
 
-    // Create the directory if it doesn't exist
     std::fs::create_dir_all(path.clone()).expect("Failed to create app data directory");
-
     path.push("db.sqlite");
+
     let result = std::fs::OpenOptions::new().create_new(true).write(true).open(&path);
     match result {
         Ok(_) => println!("Database file created"),
@@ -33,19 +63,17 @@ async fn setup_db(app: &tauri::App) -> Db {
         },
     }
 
-    // Open SQLite connection pool
     let db = sqlx::sqlite::SqlitePoolOptions::new()
         .connect(path.to_str().unwrap())
         .await
         .expect("Failed to connect to the database");
 
-    // Run migrations
     sqlx::migrate!("./migrations").run(&db).await.expect("Failed to run migrations");
 
     db
 }
 
-#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
+#[derive(Debug, Serialize, Deserialize, Clone, sqlx::FromRow)]
 struct Word {
     id: i32,               // Integer type for the primary key
     english_word: String,   // English word as text
@@ -73,8 +101,6 @@ async fn add_word(
     german_word: String,
 ) -> Result<(), String> {
     let db = &state.db;
-
-    //let wordExists: bool = sqlx::query("SELECT * FROM word english_word WHERE english_word = english_word")
 
     sqlx::query(
         "INSERT INTO word (english_word, german_word) VALUES (?1, ?2)"
@@ -144,51 +170,71 @@ async fn update_word(
     Ok(())
 }
 
-#[tauri::command] //Get 1 random word from DB
+#[tauri::command]
 async fn get_random_word(state: tauri::State<'_, AppState>) -> Result<Word, String> {
     let db = &state.db;
+    let recent_words_displayed = &state.recent_words_displayed;
 
-    let word: Word = sqlx::query_as::<_, Word>("SELECT * FROM word ORDER BY RANDOM() LIMIT 1")
-        .fetch_one(db)
-        .await
-        .map_err(|e| format!("Failed to fetch random word: {}", e))?;
-    
+    // Loop to keep fetching words until we find a new one
+    let word = loop {
+        let word: Word = sqlx::query_as::<_, Word>("SELECT * FROM word ORDER BY RANDOM() LIMIT 1")
+            .fetch_one(db)
+            .await
+            .map_err(|e| format!("Failed to fetch random word: {}", e))?;
+
+        // Lock the mutex to access recent words safely
+        let mut recent_words = recent_words_displayed.lock().await;
+
+        // Check if the word is already in the recent words list
+        if !recent_words.iter().any(|w| w.id == word.id) {
+            // Word is not recent, so break the loop and return this word
+            break word;
+        }
+    };
+
+    // Add the new word to the recent words list, ensuring the list size stays at 5
+    let mut recent_words = recent_words_displayed.lock().await;
+    recent_words.push_back(word.clone()); // Add to the back of the list
+    if recent_words.len() > 5 {
+        recent_words.pop_front(); // Remove the oldest word if list exceeds 5
+    }
+
     Ok(word)
 }
 
-#[tauri::command] //Get 1 random word from DB added in last 6 days
+#[tauri::command]
 async fn get_random_new_word(state: tauri::State<'_, AppState>) -> Result<Word, String> {
     let db = &state.db;
+    let recent_words_displayed = &state.recent_words_displayed;
 
-    let word: Word = sqlx::query_as::<_, Word>(
-        "SELECT * FROM word 
-         WHERE date_added >= DATE('now', '-6 days')
-         ORDER BY RANDOM() 
-         LIMIT 1"
-    )
-    .fetch_one(db)
-    .await
-    .map_err(|e| format!("Failed to fetch random word: {}", e))?;
-    
-    Ok(word)
-}
-
-#[tauri::command] //Prevent word repetition
-async fn get_next_word(state: tauri::State<'_, AppState>, recent_words: Vec<i32>) -> Result<Word, String> {
-    let db = &state.db;
-
-    let query = format!(
-        "SELECT * FROM word WHERE id NOT IN ({}) ORDER BY RANDOM() LIMIT 1",
-        recent_words.iter().map(|id| id.to_string()).collect::<Vec<_>>().join(", ")
-    );
-
-    let word: Word = sqlx::query_as::<_, Word>(&query)
+    let word = loop {
+        let word: Word = sqlx::query_as::<_, Word>(
+            "SELECT * FROM word 
+            WHERE date_added >= DATE('now', '-6 days') 
+            ORDER BY RANDOM() 
+            LIMIT 1"
+        )
         .fetch_one(db)
         .await
         .map_err(|e| format!("Failed to fetch random word: {}", e))?;
-    
+
+        // Lock the mutex and check against recent words
+        let mut recent_words = recent_words_displayed.lock().await;
+        if !recent_words.iter().any(|w| w.id == word.id) {
+            break word;
+        }
+    };
+
+    // Add the new word to the recent words list
+    let mut recent_words = recent_words_displayed.lock().await;
+    recent_words.push_back(word.clone());
+    if recent_words.len() > 5 {
+        recent_words.pop_front(); // Keep only the last 5 words
+    }
+
     Ok(word)
 }
+
 
 #[tauri::command] // Check if user guess is correct
 async fn check_guess(state: tauri::State<'_, AppState>, guess: String, correct_word_id: i32, practice_type: String, lan_displayed: String) -> Result<bool, String> {
@@ -262,29 +308,4 @@ async fn process_guess(
     } else {
         Ok("Incorrect!".to_string())
     }
-}
-
-#[tokio::main]
-async fn main() {
-    let app = tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![
-            add_word,
-            get_words,
-            db_word_count,
-            delete_word,
-            get_word_by_id,
-            update_word,
-            get_random_word,
-            get_next_word,
-            check_guess,
-            process_guess,
-            get_random_new_word
-        ])
-        .build(tauri::generate_context!())
-        .expect("error while building Tauri application");
-
-    let db = setup_db(&app).await;
-    app.manage(AppState { db });
-
-    app.run(|_, _| {});
 }
