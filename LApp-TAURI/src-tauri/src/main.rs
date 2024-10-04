@@ -37,7 +37,8 @@ async fn main() {
             get_random_word,
             check_guess,
             process_guess,
-            get_random_new_word
+            get_random_new_word,
+            get_random_terribleat_word
         ])
         .build(tauri::generate_context!())
         .expect("error while building Tauri application");
@@ -241,7 +242,46 @@ async fn get_random_new_word(state: tauri::State<'_, AppState>) -> Result<Word, 
 
     Ok(word)
 }
+/**/
+#[tauri::command]
+async fn get_random_terribleat_word(state: tauri::State<'_, AppState>) -> Result<Word, String> {
+    let db = &state.db;
+    let recent_words_displayed = &state.recent_words_displayed;
 
+    // Loop to keep fetching words until we find a new one
+    let word = loop {
+        // Updated SQL query to join word and user_word_performance tables
+        let word: Word = sqlx::query_as::<_, Word>(
+            "
+            SELECT w.* FROM word w
+            JOIN user_word_performance u ON w.id = u.word_id
+            WHERE u.fail_count > 0
+            ORDER BY RANDOM() LIMIT 1
+            "
+        )
+        .fetch_one(db)
+        .await
+        .map_err(|e| format!("Failed to fetch random word: {}", e))?;
+
+        // Lock the mutex to access recent words safely
+        let recent_words = recent_words_displayed.lock().await;
+
+        // Check if the word is already in the recent words list
+        if !recent_words.iter().any(|w| w.id == word.id) {
+            // Word is not recent, so break the loop and return this word
+            break word;
+        }
+    };
+
+    // Add the new word to the recent words list, ensuring the list size stays at 5
+    let mut recent_words = recent_words_displayed.lock().await;
+    recent_words.push_back(word.clone()); // Add to the back of the list
+    if recent_words.len() > 5 {
+        recent_words.pop_front(); // Remove the oldest word if list exceeds 5
+    }
+
+    Ok(word)
+}
 
 #[tauri::command] // Check if user guess is correct
 async fn check_guess(state: tauri::State<'_, AppState>, guess: String, correct_word_id: i32, practice_type: String, lan_displayed: String) -> Result<bool, String> {
@@ -300,12 +340,12 @@ async fn check_guess(state: tauri::State<'_, AppState>, guess: String, correct_w
     }
 }
 
-#[tauri::command] //Sends correct or incorrect guess to frontend
+#[tauri::command] //Sends correct or incorrect guess response to frontend
 async fn process_guess(state: tauri::State<'_, AppState>, guess: String, correct_word_id: i32, practice_type: String, lan_displayed: String) -> Result<String, String> {
     let is_correct = check_guess(state.clone(), guess, correct_word_id, practice_type, lan_displayed).await?;
 
     if is_correct {
-        update_fail_count(state.clone(), correct_word_id, true).await?; //Call function to increase fail_count
+        update_fail_count(state.clone(), correct_word_id, true).await?; //Call function to decrease fail_count
         Ok("Correct!".to_string())
     } else {
         update_fail_count(state.clone(), correct_word_id, false).await?; //Call function to increase fail_count

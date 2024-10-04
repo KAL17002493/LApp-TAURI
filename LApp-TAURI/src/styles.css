@@ -260,6 +260,7 @@ h1 {
   align-items: center; /* Center the text vertically if it breaks into two lines */
   justify-content: center; /* Center the text horizontally */
   text-align: center; /* Ensure the text remains centered */
+  cursor: default;
 }
 
 .users-guess {

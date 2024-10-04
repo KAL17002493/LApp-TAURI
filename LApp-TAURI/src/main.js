@@ -111,6 +111,13 @@ if (document.getElementsByClassName("whole-content-container-practice")[0]) {
                         displayRandomWord(errorMessage);
                     }
                     break;
+                    case "practice-suckAt":
+                        randomWord = await invoke('get_random_terribleat_word');
+                        correctWordId = randomWord.id;
+                        displayRandomWord(randomWord[randomLang]);
+                        lanDisplayed = randomLang === "english_word" ? "english" : "german";
+                        console.log(lanDisplayed);
+                        break;
                 // Add other practice types here if necessary
                 default:
                     console.error("Unknown practice type");
