@@ -3,7 +3,7 @@
 
 use serde::{Deserialize, Serialize}; // For serializing and deserializing JSON data
 use tauri::Manager; // Import Manager trait for manage function
-
+use sqlx::FromRow;
 use std::collections::VecDeque;
 use tokio::sync::Mutex;
 
@@ -73,12 +73,19 @@ async fn setup_db(app: &tauri::App) -> Db {
     db
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, sqlx::FromRow)]
+#[derive(Debug, Serialize, Deserialize, Clone, FromRow)]
 struct Word {
     id: i32,               // Integer type for the primary key
     english_word: String,   // English word as text
     german_word: String,    // German word as text
     date_added: Option<String>,  // Date added (optional if you want)
+}
+
+#[derive(FromRow)]
+struct UserWordPerformance {
+    id: i32,
+    fail_count: i32,
+    word_id: i32,
 }
 
 #[tauri::command] //Get word count
@@ -294,18 +301,64 @@ async fn check_guess(state: tauri::State<'_, AppState>, guess: String, correct_w
 }
 
 #[tauri::command] //Sends correct or incorrect guess to frontend
-async fn process_guess(
-    state: tauri::State<'_, AppState>,
-    guess: String,
-    correct_word_id: i32,
-    practice_type: String,  //It does nothing here but it it's not here the app will creash since check guess is sending 4 arguments
-    lan_displayed: String
-) -> Result<String, String> {
+async fn process_guess(state: tauri::State<'_, AppState>, guess: String, correct_word_id: i32, practice_type: String, lan_displayed: String) -> Result<String, String> {
     let is_correct = check_guess(state.clone(), guess, correct_word_id, practice_type, lan_displayed).await?;
 
     if is_correct {
+        update_fail_count(state.clone(), correct_word_id, true).await?; //Call function to increase fail_count
         Ok("Correct!".to_string())
     } else {
+        update_fail_count(state.clone(), correct_word_id, false).await?; //Call function to increase fail_count
         Ok("Incorrect!".to_string())
     }
+}
+
+async fn update_fail_count(state: tauri::State<'_, AppState>, word_id: i32, is_correct: bool) -> Result<(), String> {
+    let db = &state.db;
+
+    // Fetch user performance in one go
+    let mut performance = sqlx::query_as::<_, UserWordPerformance>("SELECT * FROM user_word_performance WHERE word_id = ?")
+        .bind(word_id)
+        .fetch_optional(db)
+        .await
+        .map_err(|e| format!("Failed to fetch user performance: {}", e))?;
+
+    // Handle fail_count increment/decrement
+    if is_correct {
+        if let Some(ref mut performance) = performance {
+            if performance.fail_count > 0 {
+                performance.fail_count -= 1;
+                // Update the fail_count in the database
+                sqlx::query("UPDATE user_word_performance SET fail_count = ? WHERE word_id = ?")
+                    .bind(performance.fail_count)
+                    .bind(word_id)
+                    .execute(db)
+                    .await
+                    .map_err(|e| format!("Failed to update fail count: {}", e))?;
+            }
+        }
+    } else {
+        if let Some(ref mut performance) = performance {
+            if performance.fail_count < 10 {
+                performance.fail_count += 1;
+                // Update the fail_count in the database
+                sqlx::query("UPDATE user_word_performance SET fail_count = ? WHERE word_id = ?")
+                    .bind(performance.fail_count)
+                    .bind(word_id)
+                    .execute(db)
+                    .await
+                    .map_err(|e| format!("Failed to update fail count: {}", e))?;
+            }
+        } else {
+            // If no entry exists, create a new one with fail_count = 1
+            sqlx::query("INSERT INTO user_word_performance (fail_count, word_id) VALUES (?, ?)")
+                .bind(1)
+                .bind(word_id)
+                .execute(db)
+                .await
+                .map_err(|e| format!("Failed to insert new user performance entry: {}", e))?;
+        }
+    }
+
+    Ok(())
 }
