@@ -183,7 +183,7 @@ async fn get_random_word(state: tauri::State<'_, AppState>) -> Result<Word, Stri
             .map_err(|e| format!("Failed to fetch random word: {}", e))?;
 
         // Lock the mutex to access recent words safely
-        let mut recent_words = recent_words_displayed.lock().await;
+        let recent_words = recent_words_displayed.lock().await;
 
         // Check if the word is already in the recent words list
         if !recent_words.iter().any(|w| w.id == word.id) {
@@ -219,7 +219,7 @@ async fn get_random_new_word(state: tauri::State<'_, AppState>) -> Result<Word, 
         .map_err(|e| format!("Failed to fetch random word: {}", e))?;
 
         // Lock the mutex and check against recent words
-        let mut recent_words = recent_words_displayed.lock().await;
+        let recent_words = recent_words_displayed.lock().await;
         if !recent_words.iter().any(|w| w.id == word.id) {
             break word;
         }

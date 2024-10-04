@@ -288,6 +288,7 @@ h1 {
   display: flex;
   justify-content: space-between;
   flex-direction: column;
+  padding: 0 0 0 5px;
 }
 
 .word-count {
@@ -362,7 +363,13 @@ h1 {
   width: 100%;
   background-color: green;
   color: #0f0f0f;
+  transition: 0.15s ease-in-out;
 }
+
+.add-word-container .add-word-button:hover {
+  background-color: #006600;
+}
+
 
 /* RIGHT CONTAINER */
 .right-container {
@@ -380,7 +387,7 @@ h1 {
   
   overflow-y: scroll;
   overflow-x: hidden;
-  border-radius: 5px;
+
   background-color: #4a8ea3;
 
   height: 500px;
@@ -436,7 +443,7 @@ h1 {
   border-radius: 2px;
   font-size: 0.95rem;
   cursor: pointer;
-  transition: 0.12s ease-in-out;
+  transition: 0.15s ease-in-out;
   margin-left: 10px;
 
   position: absolute;
