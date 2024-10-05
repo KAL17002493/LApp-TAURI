@@ -429,23 +429,56 @@ if (document.getElementsByClassName("index-container")[0])
         await fetchWordCount();  // Fetch and display the total word count
     });
 
-    //Handle form submission for saving new words
     document.querySelector("#word-form").addEventListener("submit", async (event) => {
         event.preventDefault();
-        let englishInput = document.querySelector("#english-word-input");
-        let germanInput = document.querySelector("#german-word-input");
+        let englishInput = document.getElementById("english-word-input");
+        let germanInput = document.getElementById("german-word-input");
 
         try {
             await addWord(englishInput.value, germanInput.value);
             englishInput.value = "";
             germanInput.value = "";
 
+            resetStyles(englishInput, germanInput);
+    
             await fetchWords();  // Fetch and display the updated list of words
             await fetchWordCount();  // Fetch and display the updated word count
         } catch (error) {
-            console.error("Error adding word:", error);
+            console.log(error);
+
+            if(error === "Both error"){
+                englishInput.style.background = "rgba(255, 35, 35, 0.205)";
+                englishInput.value = "";
+                englishInput.placeholder = "Already exists";
+                
+                germanInput.style.background = "rgba(255, 35, 35, 0.205)";
+                germanInput.value = "";
+                germanInput.placeholder = "Already exists";
+            }
+            else if (error === "English error"){
+                errorStype(englishInput)
+            }
+            else if (error === "German error"){
+                errorStype(germanInput)
+            }
         }
     });
+    
+    //Changes langauge input fields to red
+    function errorStype(langInput){
+        langInput.style.background = "rgba(255, 35, 35, 0.205)";
+        langInput.value = "";
+        langInput.placeholder = "Already exists";
+    }
+
+    //Function to reset input styles to default
+    function resetStyles(englishInput, germanInput) {
+        englishInput.style.background = "";  // or "initial" based on your CSS
+        germanInput.style.background = "";   // or "initial" based on your CSS
+        englishInput.placeholder = "English word";  // Default placeholder
+        germanInput.placeholder = "German word";    // Default placeholder
+    }
+    
 
     //Search words JS
     const searchInput = document.getElementById('searchWord');

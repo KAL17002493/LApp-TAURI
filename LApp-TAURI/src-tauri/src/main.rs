@@ -102,25 +102,50 @@ async fn db_word_count(state: tauri::State<'_, AppState>) -> Result<i64, String>
     Ok(count.0)  // Return the count
 }
 
-#[tauri::command] //Add a new word to the database
+#[tauri::command]
 async fn add_word(
-    state: tauri::State<'_, AppState>, 
+    state: tauri::State<'_, AppState>,
     english_word: String,
     german_word: String,
 ) -> Result<(), String> {
     let db = &state.db;
 
+    // Check if the English word already exists
+    let english_exists: Option<(String,)> = sqlx::query_as("SELECT english_word FROM word WHERE english_word = ?1")
+        .bind(&english_word)
+        .fetch_optional(db)
+        .await
+        .map_err(|e| format!("Failed to check if English word exists: {}", e))?;
+
+    // Check if the German word already exists
+    let german_exists: Option<(String,)> = sqlx::query_as("SELECT german_word FROM word WHERE german_word = ?1")
+        .bind(&german_word)
+        .fetch_optional(db)
+        .await
+        .map_err(|e| format!("Failed to check if German word exists: {}", e))?;
+
+    // Return specific error messages based on the word that exists
+    if english_exists.is_some() && german_exists.is_some() {
+        return Err("Both error".to_string());
+    } else if english_exists.is_some() {
+        return Err(format!("English error"));
+    } else if german_exists.is_some() {
+        return Err(format!("German error"));
+    }
+
+    // Insert the word if no duplicate found
     sqlx::query(
         "INSERT INTO word (english_word, german_word) VALUES (?1, ?2)"
     )
-    .bind(english_word)
-    .bind(german_word)
+    .bind(&english_word)
+    .bind(&german_word)
     .execute(db)
     .await
     .map_err(|e| format!("Error adding word: {}", e))?;
 
     Ok(())
 }
+
 
 #[tauri::command] //Get all words from the database, newest word added displayed first
 async fn get_words(state: tauri::State<'_, AppState>) -> Result<Vec<Word>, String> {

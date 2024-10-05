@@ -361,6 +361,10 @@ h1 {
   text-align: center;
 }
 
+.input-error{
+  background-color: rgba(255, 35, 35, 0.205);
+}
+
 .add-word-container .add-word-button {
   width: 100%;
   background-color: green;
@@ -372,6 +376,10 @@ h1 {
   background-color: #006600;
 }
 
+.error-message{
+  opacity: 0.1;
+
+}
 
 /* RIGHT CONTAINER */
 .right-container {
@@ -386,12 +394,9 @@ h1 {
 .word-list {
   scrollbar-width: thin;
   scrollbar-color: #3e0c507c transparent;
-  
   overflow-y: scroll;
   overflow-x: hidden;
-
   background-color: #4a8ea3;
-
   height: 500px;
 }
 
