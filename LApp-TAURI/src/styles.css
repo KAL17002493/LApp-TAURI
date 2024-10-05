@@ -131,8 +131,9 @@ h1 {
 /*### PRACTICE-PAGE ###*/
 .grid-container-practice{
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 columns, each 1 fraction unit */
-  grid-template-rows: repeat(2, 230px); /* 2 rows, each 1 fraction unit */
+  grid-template-columns: repeat(3, 1fr); /* 3 equal-width columns */
+  grid-template-rows: repeat(2, 1fr); /* 2 equal-height rows */
+  height: 100vh; /* Make the grid take up the full height of the viewport */
 }
 
 /* Make last button take up 2 grid slots horizontally */

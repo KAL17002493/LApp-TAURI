@@ -10,3 +10,8 @@
   <li>Check if database has at least 5 words in it before running the recently displayed word check or prevent infinit loop</li>
   <li>When practicing Terrible at instead of getting any word get a batch of like 10 - 20 and cycle between them, this will make it so it's easier to remember them</li>
 </ul>
+
+<h3>Done</h3>
+<ul>
+
+</ul>
