@@ -79,7 +79,7 @@ if (document.getElementsByClassName("whole-content-container-practice")[0]) {
                 element.hidden = true; // Hide the element
             }
         };
-        
+
         if (randomWord === "No new words have been added in last 6 days") {
             hideElement(document.getElementsByClassName("users-guess")[0]);
             hideElement(document.getElementsByClassName("word-guess-response")[0]);
@@ -87,7 +87,17 @@ if (document.getElementsByClassName("whole-content-container-practice")[0]) {
 
         document.getElementsByClassName("word-to-guess")[0].innerHTML = randomWord;
         guessResponseFadeout();
-        //console.log(`Practice type: ${practiceType}, Word displayed: ${randomWord}`);
+        
+        /*try {
+            document.getElementsByClassName("word-to-guess")[0].innerHTML = randomWord;
+            guessResponseFadeout();
+        }
+        catch(error) {
+            if (error === "No new words have been added in last 6 days") {
+                hideElement(document.getElementsByClassName("users-guess")[0]);
+                hideElement(document.getElementsByClassName("word-guess-response")[0]);
+            }
+        }*/
     }
 
     // Handle form submission and check the user's guess
@@ -473,10 +483,10 @@ if (document.getElementsByClassName("index-container")[0])
 
     //Function to reset input styles to default
     function resetStyles(englishInput, germanInput) {
-        englishInput.style.background = "";  // or "initial" based on your CSS
-        germanInput.style.background = "";   // or "initial" based on your CSS
-        englishInput.placeholder = "English word";  // Default placeholder
-        germanInput.placeholder = "German word";    // Default placeholder
+        englishInput.style.background = "";
+        germanInput.style.background = "";
+        englishInput.placeholder = "English word";
+        germanInput.placeholder = "German word";
     }
     
 

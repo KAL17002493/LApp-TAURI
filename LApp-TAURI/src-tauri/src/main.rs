@@ -124,7 +124,7 @@ async fn add_word(
         .await
         .map_err(|e| format!("Failed to check if German word exists: {}", e))?;
 
-    // Return specific error messages based on the word that exists
+    //Return specific error messages based on the word that exists
     if english_exists.is_some() && german_exists.is_some() {
         return Err("Both error".to_string());
     } else if english_exists.is_some() {
@@ -250,6 +250,10 @@ async fn get_random_new_word(state: tauri::State<'_, AppState>) -> Result<Word, 
         .fetch_one(db)
         .await
         .map_err(|e| format!("Failed to fetch random word: {}", e))?;
+
+        /*if word.text.is_empty(){
+            return Err(format!("No new words have been added in last 6 days"))
+        }*/
 
         // Lock the mutex and check against recent words
         let recent_words = recent_words_displayed.lock().await;
